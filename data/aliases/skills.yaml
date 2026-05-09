@@ -1,0 +1,243 @@
+# Hand-curated skill aliases. Layer 1 of the canonicalisation pipeline.
+# Format:
+#   <canonical_name>:                   # the form we want to keep
+#     - <alias_or_abbreviation>         # forms that map TO the canonical
+#     - <other_alias>
+#
+# Lower-case lookup; keys + values both compared in lower-case. The script
+# preserves the canonical's casing in the output.
+#
+# Keep this list short and obvious. The ESCO API + embedding fallback handle
+# the long tail. We only need entries here for cases where neither layer can
+# infer the mapping correctly.
+
+JavaScript:
+  - js
+  - ecmascript
+  - es6
+  - vanilla js
+
+TypeScript:
+  - ts
+
+Python:
+  - py
+  - python3
+
+Java:
+  - java se
+  - java se 8
+  - core java
+
+C++:
+  - cpp
+  - c plus plus
+
+C#:
+  - csharp
+  - c sharp
+  - dotnet
+  - .net core
+
+SQL:
+  - structured query language
+
+PostgreSQL:
+  - postgres
+  - psql
+
+MySQL:
+  - mariadb
+
+MongoDB:
+  - mongo
+
+Kubernetes:
+  - k8s
+  - kube
+
+Docker:
+  - docker engine
+  - containers
+
+Git:
+  - git scm
+
+Linux:
+  - unix
+
+Bash:
+  - shell scripting
+
+REST API:
+  - rest
+  - restful api
+  - restful
+
+GraphQL:
+  - graph ql
+
+Microservices:
+  - micro services
+  - micro-services
+
+CI/CD:
+  - cicd
+  - continuous integration
+  - continuous delivery
+  - continuous integration / continuous delivery
+
+DevOps:
+  - dev ops
+  - dev-ops
+
+Machine Learning:
+  - ml
+  - machine-learning
+
+Deep Learning:
+  - dl
+
+Natural Language Processing:
+  - nlp
+
+Computer Vision:
+  - cv
+  - computer-vision
+
+Data Science:
+  - data-science
+  - ds
+
+Data Engineering:
+  - data-engineering
+
+Artificial Intelligence:
+  - ai
+  - artificial-intelligence
+
+Generative AI:
+  - gen ai
+  - genai
+  - generative-ai
+
+ChatGPT:
+  - chat gpt
+  - chat-gpt
+
+Amazon Web Services:
+  - aws
+  - amazon-web-services
+
+Google Cloud Platform:
+  - gcp
+  - google cloud
+  - google-cloud
+
+Microsoft Azure:
+  - azure
+  - ms azure
+
+Salesforce:
+  - sfdc
+
+Salesforce Lightning:
+  - lightning
+
+ServiceNow:
+  - service-now
+  - service now
+
+SAP:
+  - sap erp
+
+SAP HANA:
+  - hana
+
+Oracle Database:
+  - oracle db
+  - oracle rdbms
+
+React:
+  - react.js
+  - reactjs
+
+Next.js:
+  - nextjs
+  - next js
+
+Node.js:
+  - nodejs
+  - node js
+  - node
+
+Vue.js:
+  - vuejs
+  - vue js
+
+Angular:
+  - angular.js
+  - angularjs
+  - angular js
+  - angular 2+
+
+Django:
+  - django framework
+
+Flask:
+  - flask framework
+
+FastAPI:
+  - fast api
+  - fast-api
+
+Spring Boot:
+  - springboot
+  - spring-boot
+
+TensorFlow:
+  - tensor flow
+  - tensorflow 2
+
+PyTorch:
+  - pytorch
+  - py torch
+
+Project Management:
+  - project-management
+  - pm
+  - pmp
+
+Risk Management:
+  - risk-management
+
+Communication:
+  - communications
+  - communication skills
+
+Leadership:
+  - leadership skills
+  - team leadership
+
+Teamwork:
+  - team work
+  - team-work
+  - teamwork and collaboration
+  - team collaboration
+
+Time Management:
+  - time-management
+
+Problem Solving:
+  - problem-solving
+  - problem solver
+
+Critical Thinking:
+  - critical-thinking
+
+Analytical Thinking:
+  - analytical-thinking
+  - analytical skills
+
+Customer Service:
+  - customer-service

@@ -119,12 +119,14 @@ ignore = [
     "E501",      # line length — covered by formatter
     "PLR0913",   # too many arguments — fine for service layers
     "PLR0911",   # too many return statements — fine for routers / parsers
+    "PLR0912",   # too many branches — fine for orchestration / payload builders
     "PLR0915",   # too many statements — fine for orchestration entrypoints
     "PLR2004",   # magic values — explicit numbers are clearer than constants here
     "PLC0415",   # lazy imports inside functions — intentional for optional deps
     "PLW0603",   # global statement — used deliberately for module-level state
     "B008",      # function calls in argument defaults — required by Typer / FastAPI
     "BLE001",    # bare/broad except in best-effort startup paths
+    "RUF001",    # ambiguous unicode chars — we intentionally handle unicode dashes / mult signs
 ]
 per-file-ignores = { "scripts/*.py" = ["T201"] }   # allow print() in CLI scripts
 
