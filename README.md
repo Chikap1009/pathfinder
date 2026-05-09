@@ -2,7 +2,7 @@
 
 > Intent-Aware and Explainable Hybrid Retrieval System for people / profile search.
 
-[![CI](https://github.com/<owner>/pathfinder/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/pathfinder/actions/workflows/ci.yml)
+[![CI](https://github.com/Chikap1009/pathfinder/actions/workflows/ci.yml/badge.svg)](https://github.com/Chikap1009/pathfinder/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Next.js](https://img.shields.io/badge/next.js-15.5-black)
@@ -60,7 +60,7 @@ See [docs/architecture.md](docs/architecture.md) and the
 
 ```bash
 # 0. Prerequisites: WSL2 Ubuntu, Node 20+ (via fnm), pnpm 9+, uv 0.11+, Docker Desktop, gh.
-git clone https://github.com/<owner>/pathfinder.git && cd pathfinder
+git clone https://github.com/Chikap1009/pathfinder.git && cd pathfinder
 cp .env.example .env       # fill in API keys for Groq / Gemini / Cerebras / Langfuse
 
 # 1. Bring up local infra
