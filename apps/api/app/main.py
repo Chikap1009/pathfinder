@@ -7,8 +7,9 @@ boot time bounded — important for HF Spaces free tier where slow boots cause 5
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,15 +44,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         state["qdrant"] = AsyncQdrantClient(
             url=str(settings.qdrant_url),
             api_key=(
-                settings.qdrant_api_key.get_secret_value()
-                if settings.qdrant_api_key
-                else None
+                settings.qdrant_api_key.get_secret_value() if settings.qdrant_api_key else None
             ),
         )
         log.info("qdrant_ready", url=str(settings.qdrant_url))
     except ImportError:
         log.warning("qdrant_skipped", reason="qdrant-client not installed (sync --extra graph)")
-    except Exception as exc:  # noqa: BLE001 — best-effort startup
+    except Exception as exc:
         log.warning("qdrant_init_failed", error=str(exc))
 
     # Neo4j driver
@@ -68,7 +67,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.info("neo4j_ready", uri=settings.neo4j_uri)
     except ImportError:
         log.warning("neo4j_skipped", reason="neo4j driver not installed (sync --extra graph)")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.warning("neo4j_init_failed", error=str(exc))
 
     # Lazy slots — populated on first request (see app.services.vector / .rerank)

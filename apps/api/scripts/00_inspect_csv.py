@@ -23,7 +23,6 @@ import shutil
 import sys
 import urllib.error
 import urllib.request
-from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -34,8 +33,8 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-REPO_API_DIR = Path(__file__).resolve().parents[1]              # apps/api/
-REPO_ROOT = REPO_API_DIR.parents[1]                             # pathfinder/
+REPO_API_DIR = Path(__file__).resolve().parents[1]  # apps/api/
+REPO_ROOT = REPO_API_DIR.parents[1]  # pathfinder/
 DEFAULT_CSV = REPO_ROOT / "data" / "raw" / "profiles.csv"
 SCHEMA_MAP_PATH = REPO_API_DIR / "app" / "core" / "schema_map.yaml"
 
@@ -92,7 +91,14 @@ CANONICAL_FIELDS: dict[str, dict[str, Any]] = {
         "required": False,
     },
     "location": {
-        "name_patterns": [r"^location$", r"^city$", r"^region$", r"^geo$", r"^address$", r"^based_?in$"],
+        "name_patterns": [
+            r"^location$",
+            r"^city$",
+            r"^region$",
+            r"^geo$",
+            r"^address$",
+            r"^based_?in$",
+        ],
         "kind": "short_text",
         "required": False,
     },
@@ -121,20 +127,21 @@ CANONICAL_FIELDS: dict[str, dict[str, Any]] = {
 
 # ─── Value-shape detectors ───────────────────────────────────────────────────
 
+
 def _looks_like_json(series: pd.Series, sample_n: int = 25) -> float:
     sample = series.dropna().astype(str).head(sample_n)
     if sample.empty:
         return 0.0
     hits = 0
-    for v in sample:
-        v = v.strip()
+    for raw in sample:
+        v = raw.strip()
         if not v:
             continue
         if (v.startswith("[") and v.endswith("]")) or (v.startswith("{") and v.endswith("}")):
             try:
                 json.loads(v)
                 hits += 1
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
     return hits / len(sample) if len(sample) else 0.0
 
@@ -144,9 +151,9 @@ def _looks_like_delimited_list(series: pd.Series, sample_n: int = 25) -> float:
     if sample.empty:
         return 0.0
     hits = sum(
-        1 for v in sample
-        if any(d in v for d in (",", ";", "|"))
-        and len(re.split(r"[,;|]", v)) >= 2
+        1
+        for v in sample
+        if any(d in v for d in (",", ";", "|")) and len(re.split(r"[,;|]", v)) >= 2
     )
     return hits / len(sample)
 
@@ -166,6 +173,7 @@ def _avg_token_count(series: pd.Series, sample_n: int = 50) -> float:
 
 
 # ─── Mapping core ────────────────────────────────────────────────────────────
+
 
 def _score_column_for_field(
     column: str,
@@ -278,6 +286,7 @@ def map_columns(df: pd.DataFrame, min_score: float = 0.45) -> dict[str, Any]:
 
 # ─── IO helpers ──────────────────────────────────────────────────────────────
 
+
 def try_download(target: Path, urls: list[str], console: Console) -> bool:
     target.parent.mkdir(parents=True, exist_ok=True)
     for url in urls:
@@ -285,16 +294,20 @@ def try_download(target: Path, urls: list[str], console: Console) -> bool:
             console.print(f"[dim]→ trying[/] {url}")
             req = urllib.request.Request(
                 url,
-                headers={"User-Agent": "PathFinder-Bootstrap/0.1 (https://github.com/<owner>/pathfinder)"},
+                headers={
+                    "User-Agent": "PathFinder-Bootstrap/0.1 (https://github.com/<owner>/pathfinder)"
+                },
             )
             with urllib.request.urlopen(req, timeout=20) as resp, target.open("wb") as out:
                 shutil.copyfileobj(resp, out)
             if target.exists() and target.stat().st_size > 0:
-                console.print(f"[green]✓[/] downloaded → {target} ({target.stat().st_size:,} bytes)")
+                console.print(
+                    f"[green]✓[/] downloaded → {target} ({target.stat().st_size:,} bytes)"
+                )
                 return True
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
             console.print(f"[yellow]✗[/] {type(exc).__name__}: {exc}")
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             console.print(f"[yellow]✗[/] unexpected: {exc}")
     return False
 
@@ -394,8 +407,8 @@ def write_schema_map(
         "version": 1,
         "generated_by": "scripts/00_inspect_csv.py",
         "source_csv": str(csv_path),
-        "row_count": int(len(df)),
-        "column_count": int(len(df.columns)),
+        "row_count": len(df),
+        "column_count": len(df.columns),
         "columns": [{"name": c, "dtype": str(df[c].dtype)} for c in df.columns],
         "fields": {
             f: {
@@ -423,9 +436,13 @@ app = typer.Typer(add_completion=False, no_args_is_help=False, help=__doc__)
 @app.command()
 def main(
     csv: Path = typer.Option(DEFAULT_CSV, "--csv", help="Path to profiles.csv"),
-    download: bool = typer.Option(True, "--download/--no-download", help="Try to download if missing"),
+    download: bool = typer.Option(
+        True, "--download/--no-download", help="Try to download if missing"
+    ),
     out: Path = typer.Option(SCHEMA_MAP_PATH, "--out", help="Output schema_map.yaml path"),
-    overwrite: bool = typer.Option(True, "--overwrite/--no-overwrite", help="Overwrite existing schema_map.yaml"),
+    overwrite: bool = typer.Option(
+        True, "--overwrite/--no-overwrite", help="Overwrite existing schema_map.yaml"
+    ),
 ) -> None:
     console = Console()
     console.rule("[bold magenta]PathFinder · Day 1 · CSV introspection[/]")
@@ -450,7 +467,7 @@ def main(
     # 2) Read it
     try:
         df = pd.read_csv(csv, low_memory=False)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         console.print(f"[red]Failed to parse CSV: {exc}[/]")
         # Retry with python engine (more tolerant of malformed rows)
         df = pd.read_csv(csv, engine="python", on_bad_lines="warn")
@@ -472,16 +489,17 @@ def main(
     # 6) Stop & confirm
     console.rule("[bold]ACTION REQUIRED[/]")
     needs_attention = [
-        f for f, m in mapping["fields"].items()
+        f
+        for f, m in mapping["fields"].items()
         if m["confidence"] != "high" and (m["required"] or m["column"] is not None)
     ]
     if needs_attention:
-        console.print(
-            "[yellow bold]Review these mappings before proceeding to ETL:[/]"
-        )
+        console.print("[yellow bold]Review these mappings before proceeding to ETL:[/]")
         for f in needs_attention:
             m = mapping["fields"][f]
-            console.print(f"  · [cyan]{f}[/] → {m['column']} (conf=[bold]{m['confidence']}[/], score={m['score']:.2f})")
+            console.print(
+                f"  · [cyan]{f}[/] → {m['column']} (conf=[bold]{m['confidence']}[/], score={m['score']:.2f})"
+            )
         console.print()
         console.print(
             "Edit [cyan]apps/api/app/core/schema_map.yaml[/] manually if any "

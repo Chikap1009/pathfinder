@@ -53,9 +53,7 @@ def configure_otel(app: Any | None = None) -> bool:
         else f"{str(settings.langfuse_host).rstrip('/')}/api/public/otel/v1/traces"
     )
 
-    os.environ.setdefault(
-        "OTEL_EXPORTER_OTLP_TRACES_HEADERS", f"Authorization=Basic {auth}"
-    )
+    os.environ.setdefault("OTEL_EXPORTER_OTLP_TRACES_HEADERS", f"Authorization=Basic {auth}")
 
     provider = TracerProvider(
         resource=Resource.create({"service.name": settings.otel_service_name})

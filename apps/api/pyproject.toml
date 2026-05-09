@@ -112,7 +112,18 @@ extend-exclude = ["data", "scripts/legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "C4", "UP", "SIM", "PL", "RUF"]
-ignore = ["E501", "PLR0913"]   # E501 covered by formatter
+ignore = [
+    "E501",      # line length — covered by formatter
+    "PLR0913",   # too many arguments — fine for service layers
+    "PLR0911",   # too many return statements — fine for routers / parsers
+    "PLR0915",   # too many statements — fine for orchestration entrypoints
+    "PLR2004",   # magic values — explicit numbers are clearer than constants here
+    "PLC0415",   # lazy imports inside functions — intentional for optional deps
+    "PLW0603",   # global statement — used deliberately for module-level state
+    "B008",      # function calls in argument defaults — required by Typer / FastAPI
+    "BLE001",    # bare/broad except in best-effort startup paths
+]
+per-file-ignores = { "scripts/*.py" = ["T201"] }   # allow print() in CLI scripts
 
 [tool.ruff.format]
 quote-style = "double"
