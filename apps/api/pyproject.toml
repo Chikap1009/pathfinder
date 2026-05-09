@@ -7,7 +7,7 @@ requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
 authors = [{ name = "PathFinder" }]
 
-# ─── Core runtime (Day 1 / Step 5 ready) ────────────────────────────────────
+# ─── Core runtime — also covers BM25 baseline + IR metrics (lightweight) ────
 dependencies = [
     "fastapi>=0.115,<1.0",
     "uvicorn[standard]>=0.32",
@@ -19,12 +19,18 @@ dependencies = [
     "rich>=13.9",
     "pandas>=2.2",
     "numpy<2.0",                       # torch / FlagEmbedding compatibility
+    "scipy>=1.14",
     "pyarrow>=17.0",
     "duckdb>=1.1",
     "python-dotenv>=1.0",
     "structlog>=24.4",
     "tenacity>=9.0",
     "orjson>=3.10",
+    # Retrieval + eval baseline (light: pure-python + numba; no torch)
+    "bm25s>=0.2.6",
+    "PyStemmer>=2.2",                  # bm25s stemmer backend
+    "ranx>=0.3",
+    "ir-measures>=0.3.4",
 ]
 
 # ─── Optional dependency groups ─────────────────────────────────────────────
@@ -37,9 +43,7 @@ ml = [
     "transformers>=4.45",
     "sentence-transformers>=3.2",
     "FlagEmbedding>=1.3",
-    "bm25s>=0.2.6",
     "scikit-learn>=1.5",
-    "scipy>=1.14",
 ]
 
 graph = [
@@ -67,9 +71,8 @@ llm = [
 
 eval = [
     "ragas>=0.2",
-    "ranx>=0.3",
-    "ir-measures>=0.3.4",
     "datasets>=3.0",
+    # ranx + ir-measures already in core
 ]
 
 jobs = [

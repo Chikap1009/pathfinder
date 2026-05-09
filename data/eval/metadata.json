@@ -1,0 +1,13 @@
+{
+  "seed": 42,
+  "queries_per_task": 50,
+  "relevance_threshold_jaccard": 0.5,
+  "task_breakdown": {
+    "candidate_search": 50,
+    "job_search": 50
+  },
+  "qrels_stats": {
+    "total_query_doc_pairs": 822,
+    "avg_relevants_per_query": 8.22
+  }
+}

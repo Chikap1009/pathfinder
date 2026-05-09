@@ -2640,18 +2640,23 @@ name = "pathfinder-api"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "bm25s" },
     { name = "duckdb" },
     { name = "fastapi" },
     { name = "httpx" },
+    { name = "ir-measures" },
     { name = "numpy" },
     { name = "orjson" },
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pystemmer" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
+    { name = "ranx" },
     { name = "rich" },
+    { name = "scipy" },
     { name = "structlog" },
     { name = "tenacity" },
     { name = "typer" },
@@ -2661,13 +2666,11 @@ dependencies = [
 [package.optional-dependencies]
 all = [
     { name = "arq" },
-    { name = "bm25s" },
     { name = "datasets" },
     { name = "flagembedding" },
     { name = "google-generativeai" },
     { name = "groq" },
     { name = "instructor" },
-    { name = "ir-measures" },
     { name = "langchain" },
     { name = "langchain-community" },
     { name = "langchain-experimental" },
@@ -2688,10 +2691,8 @@ all = [
     { name = "opentelemetry-sdk" },
     { name = "qdrant-client" },
     { name = "ragas" },
-    { name = "ranx" },
     { name = "redis" },
     { name = "scikit-learn" },
-    { name = "scipy" },
     { name = "sentence-transformers" },
     { name = "torch" },
     { name = "transformers" },
@@ -2699,9 +2700,7 @@ all = [
 ]
 eval = [
     { name = "datasets" },
-    { name = "ir-measures" },
     { name = "ragas" },
-    { name = "ranx" },
 ]
 graph = [
     { name = "langchain" },
@@ -2730,10 +2729,8 @@ llm = [
     { name = "openai" },
 ]
 ml = [
-    { name = "bm25s" },
     { name = "flagembedding" },
     { name = "scikit-learn" },
-    { name = "scipy" },
     { name = "sentence-transformers" },
     { name = "torch" },
     { name = "transformers" },
@@ -2761,7 +2758,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "arq", marker = "extra == 'jobs'", specifier = ">=0.26" },
-    { name = "bm25s", marker = "extra == 'ml'", specifier = ">=0.2.6" },
+    { name = "bm25s", specifier = ">=0.2.6" },
     { name = "datasets", marker = "extra == 'eval'", specifier = ">=3.0" },
     { name = "duckdb", specifier = ">=1.1" },
     { name = "fastapi", specifier = ">=0.115,<1.0" },
@@ -2770,7 +2767,7 @@ requires-dist = [
     { name = "groq", marker = "extra == 'llm'", specifier = ">=0.13" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "instructor", marker = "extra == 'llm'", specifier = ">=1.7" },
-    { name = "ir-measures", marker = "extra == 'eval'", specifier = ">=0.3.4" },
+    { name = "ir-measures", specifier = ">=0.3.4" },
     { name = "langchain", marker = "extra == 'graph'", specifier = ">=0.3" },
     { name = "langchain-community", marker = "extra == 'graph'", specifier = ">=0.3" },
     { name = "langchain-experimental", marker = "extra == 'graph'", specifier = ">=0.3" },
@@ -2796,15 +2793,16 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=17.0" },
     { name = "pydantic", specifier = ">=2.9,<3.0" },
     { name = "pydantic-settings", specifier = ">=2.6" },
+    { name = "pystemmer", specifier = ">=2.2" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "qdrant-client", marker = "extra == 'graph'", specifier = ">=1.12" },
     { name = "ragas", marker = "extra == 'eval'", specifier = ">=0.2" },
-    { name = "ranx", marker = "extra == 'eval'", specifier = ">=0.3" },
+    { name = "ranx", specifier = ">=0.3" },
     { name = "redis", marker = "extra == 'jobs'", specifier = ">=5.2" },
     { name = "rich", specifier = ">=13.9" },
     { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.5" },
-    { name = "scipy", marker = "extra == 'ml'", specifier = ">=1.14" },
+    { name = "scipy", specifier = ">=1.14" },
     { name = "sentence-transformers", marker = "extra == 'ml'", specifier = ">=3.2" },
     { name = "structlog", specifier = ">=24.4" },
     { name = "tenacity", specifier = ">=9.0" },
@@ -3146,6 +3144,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f3/91/9c6ee907786a473bf81c5f53cf703ba0957b23ab84c264080fb5a450416f/pyparsing-3.3.2.tar.gz", hash = "sha256:c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc", size = 6851574, upload-time = "2026-01-21T03:57:59.36Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl", hash = "sha256:850ba148bd908d7e2411587e247a1e4f0327839c40e2e5e6d05a007ecc69911d", size = 122781, upload-time = "2026-01-21T03:57:55.912Z" },
+]
+
+[[package]]
+name = "pystemmer"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/ca/959415b311e05812c1cfe926e21a6c64dd0131b076f258805891c10840e7/pystemmer-3.0.0.tar.gz", hash = "sha256:eb9f31accf188e733f0f375cad1594f7cc21ad86b20977ccce0c7162c7c6c35e", size = 303779, upload-time = "2025-05-08T03:21:40.943Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e2/98/c618418767da15005100ef1839151b994268a0b27eaf17ed1d455710192a/PyStemmer-3.0.0-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d0497993de48ba98ce2e6b31ace4a1f5af5c24630d15b997e9be1a1049ee07be", size = 703563, upload-time = "2025-05-08T03:22:49.067Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/e2/b65a69b8714f658b7d50094fe88889c1cb89ca9a7b6dbc10c4fcf3a62642/PyStemmer-3.0.0-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a61d4b74b87a72d3a3bb1d1a28ab5fbacd2835e059049111185b3023d64bddd6", size = 745290, upload-time = "2025-05-08T03:22:51.252Z" },
+    { url = "https://files.pythonhosted.org/packages/88/1e/aa0e3e1450f0efee5f5af7f1046183db1ff5f1d0873b7cec39d9339d2e99/PyStemmer-3.0.0-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:e9fc61a241df3c754c16f44acf523a67c16ecf7a0af14d339649a89f5a1ed669", size = 709919, upload-time = "2025-05-08T03:22:52.546Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/0b/78b293b06646e480aeaa0f2c9c9ce67859e178a9a4fd52d894d9fdfdf3b1/PyStemmer-3.0.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:076099cb664d9ef245d0b2ef3378f00e01185985c79c6e6316d570a76c15fadf", size = 745226, upload-time = "2025-05-08T03:22:53.877Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/b1/f1f838290cb7f78725cf088c9d5a78fa729e86086f8932f61261e2b06515/pystemmer-3.0.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:88c3e9dddc97d6697cb086d66c8655e2ed051acacffb479cc6423e56b1413b66", size = 235481, upload-time = "2025-05-08T03:22:46.323Z" },
+    { url = "https://files.pythonhosted.org/packages/91/b6/57cc12e2d2292846056020716b65a8f1dd5dc03c83cb60143cf019e94a67/pystemmer-3.0.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:78555f22dd211b220c421b5edafb5f81d2ddb259c668b347aed6853da3695c6d", size = 240735, upload-time = "2025-05-08T03:22:47.589Z" },
+    { url = "https://files.pythonhosted.org/packages/83/3c/1102c4894943b01e24918ee701b5584e87bf27fa850df1b08a59a8af03fe/pystemmer-3.0.0-cp312-cp312-win32.whl", hash = "sha256:f6f3db949aa4e0f97be9b800bf1c026229f373e39ebfead8975569a87af39f29", size = 152178, upload-time = "2025-05-08T03:22:55.285Z" },
+    { url = "https://files.pythonhosted.org/packages/56/21/cbdef54847c05a4afddfcef76750c9d43768437af22b169be881df95c5ca/pystemmer-3.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:62ad69d85819082e77e720f25818a5219c5429d508ccdcf5da37405c92ca4a30", size = 201922, upload-time = "2025-05-08T03:22:58.194Z" },
 ]
 
 [[package]]

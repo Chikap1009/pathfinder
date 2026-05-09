@@ -86,16 +86,33 @@ reranker score &gt; 0.7 (likely false negatives).
 | End-to-end p50              | &lt; 600 ms |
 | End-to-end p95              | &lt; 2 s |
 
-## 3. Ablation table (filled in Week 2 / 5)
+## 3. Ablation table
 
-| Config                              | nDCG@10 | Recall@100 | RAGAS Faithfulness | p95 latency |
-| ----------------------------------- | ------- | ---------- | ------------------ | ----------- |
-| BM25 only (baseline)                |         |            |                    |             |
-| + BGE-M3 dense                      |         |            |                    |             |
-| + RRF (k=60)                        |         |            |                    |             |
-| + cross-encoder rerank              |         |            |                    |             |
-| + KG augmentation                   |         |            |                    |             |
-| + DAT fusion                        | (target +2-3 % over RRF) |  |  |  |
+The baseline row is locked from real measurements as of 2026-05-09; later rows
+fill in across Week 2-5.
+
+### Overall (mean of candidate + job tasks)
+
+| Config                              | nDCG@10 | Recall@100 | MRR@10 |
+| ----------------------------------- | ------: | ---------: | -----: |
+| **BM25 only (baseline)**            |   0.604 |      0.770 |  0.634 |
+| + BGE-M3 dense                      |   _TBD_ |      _TBD_ |  _TBD_ |
+| + RRF (k=60)                        |   _TBD_ |      _TBD_ |  _TBD_ |
+| + cross-encoder rerank              |   _TBD_ |      _TBD_ |  _TBD_ |
+| + KG augmentation                   |   _TBD_ |      _TBD_ |  _TBD_ |
+| + DAT fusion (ablation)             |   _TBD_ |      _TBD_ |  _TBD_ |
+
+### BM25-only split by task
+
+| Task              | nDCG@10 | Recall@10 | Recall@100 | MRR@10 | MAP   |
+| ----------------- | ------: | --------: | ---------: | -----: | ----: |
+| Candidate search  |   0.309 |     0.316 |      0.549 |  0.305 | 0.308 |
+| Job search        |   0.899 |     0.845 |      0.990 |  0.963 | 0.932 |
+
+Latency: avg ≈ 0.1 ms / query on a single thread (BM25S in-memory index, 1,782
+profile docs + 1,370 job docs). DAT fusion adds 2-3 % nDCG@10 in published
+benchmarks at the cost of ~3× retrieval latency — that's the tradeoff the
+last row will quantify.
 
 ## 4. Judge alignment
 

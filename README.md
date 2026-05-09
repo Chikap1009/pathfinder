@@ -66,20 +66,39 @@ Recall@100 ≥ 0.97 &nbsp;·&nbsp; nDCG@10 ≥ 0.55 &nbsp;·&nbsp; RAGAS Faithfu
 See [docs/architecture.md](docs/architecture.md) and the
 [ADR folder](docs/decisions/) for component-by-component justification.
 
-## Ablation table (filled in Week 2 / 5)
+## Ablation table
 
-| Config                              | nDCG@10 | Recall@100 | RAGAS Faithfulness | p95 latency |
-| ----------------------------------- | ------- | ---------- | ------------------ | ----------- |
-| BM25 only (baseline)                | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
-| + BGE-M3 dense                      | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
-| + RRF (k=60)                        | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
-| + cross-encoder rerank              | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
-| + KG augmentation                   | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
-| + DAT fusion (ablation)             | _TBD_   | _TBD_      | _TBD_              | _TBD_       |
+Each row is evaluated separately on **candidate-search** and **job-search**
+(match-pair scoring lands in Week 3 with the KG row). RAGAS faithfulness is
+populated once the explanation generator ships (Week 5).
 
-Every row evaluated separately on candidate-search, job-search, and match-pair tasks
-with Cohen's-κ-aligned RAGAS judges (different model family from the generator to
-mitigate self-bias).
+### Overall (mean of candidate + job tasks)
+
+| Config                              | nDCG@10 | Recall@100 | MRR@10 | RAGAS Faithfulness | p95 latency |
+| ----------------------------------- | ------: | ---------: | -----: | -----------------: | ----------- |
+| **BM25 only (baseline)**            |   0.604 |      0.770 |  0.634 |              _TBD_ | 0.1 ms / q  |
+| + BGE-M3 dense                      |   _TBD_ |      _TBD_ |  _TBD_ |              _TBD_ | _TBD_       |
+| + RRF (k=60)                        |   _TBD_ |      _TBD_ |  _TBD_ |              _TBD_ | _TBD_       |
+| + cross-encoder rerank              |   _TBD_ |      _TBD_ |  _TBD_ |              _TBD_ | _TBD_       |
+| + KG augmentation                   |   _TBD_ |      _TBD_ |  _TBD_ |              _TBD_ | _TBD_       |
+| + DAT fusion (ablation)             |   _TBD_ |      _TBD_ |  _TBD_ |              _TBD_ | _TBD_       |
+
+### BM25-only baseline split by task
+
+| Task              | nDCG@10 | Recall@10 | Recall@100 | MRR@10 | MAP   |
+| ----------------- | ------: | --------: | ---------: | -----: | ----: |
+| Candidate search  |   0.309 |     0.316 |      0.549 |  0.305 | 0.308 |
+| Job search        |   0.899 |     0.845 |      0.990 |  0.963 | 0.932 |
+
+The asymmetry is intentional: candidate queries are bag-of-skills against verbose
+profile prose (BM25 over-matches common terms), while job queries include the
+designation as a strong lexical key. BGE-M3 dense + cross-encoder rerank are
+specifically expected to lift the candidate-search row — see
+[docs/eval-methodology.md](docs/eval-methodology.md) for the protocol.
+
+Eval set: 100 deterministic queries (seed=42) generated from real corpus
+anchors via [`app/eval/testset_gen.py`](apps/api/app/eval/testset_gen.py).
+Reproducible via `uv --directory apps/api run python scripts/02_bm25_baseline.py`.
 
 ## Quick start
 
