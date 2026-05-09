@@ -1,0 +1,35 @@
+name: Deploy API (HF Spaces)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+jobs:
+  push-to-hf-space:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push apps/api/ subtree to HF Space
+        env:
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_TOKEN:    ${{ secrets.HF_TOKEN }}
+          HF_SPACE:    ${{ secrets.HF_SPACE }}     # e.g. pathfinder-api
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE" ]; then
+            echo "::warning::HF_USERNAME / HF_TOKEN / HF_SPACE secrets not set — skipping deploy."
+            exit 0
+          fi
+          git config user.name  "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git remote add space "https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE" || true
+          # Push only apps/api/ as the Space root via subtree split.
+          git subtree split --prefix=apps/api -b _hf_api
+          git push --force space _hf_api:main

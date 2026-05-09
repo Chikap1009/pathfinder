@@ -1,0 +1,139 @@
+[project]
+name = "pathfinder-api"
+version = "0.1.0"
+description = "PathFinder API — hybrid retrieval, KG, explainability."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "PathFinder" }]
+
+# ─── Core runtime (Day 1 / Step 5 ready) ────────────────────────────────────
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9,<3.0",
+    "pydantic-settings>=2.6",
+    "httpx>=0.27",
+    "typer>=0.13",
+    "pyyaml>=6.0",
+    "rich>=13.9",
+    "pandas>=2.2",
+    "numpy<2.0",                       # torch / FlagEmbedding compatibility
+    "pyarrow>=17.0",
+    "duckdb>=1.1",
+    "python-dotenv>=1.0",
+    "structlog>=24.4",
+    "tenacity>=9.0",
+    "orjson>=3.10",
+]
+
+# ─── Optional dependency groups ─────────────────────────────────────────────
+# Install with: uv sync --extra ml --extra graph --extra eval --extra llm --extra jobs
+# Or all at once: uv sync --all-extras
+[project.optional-dependencies]
+
+ml = [
+    "torch>=2.4",
+    "transformers>=4.45",
+    "sentence-transformers>=3.2",
+    "FlagEmbedding>=1.3",
+    "bm25s>=0.2.6",
+    "scikit-learn>=1.5",
+    "scipy>=1.14",
+]
+
+graph = [
+    "qdrant-client>=1.12",
+    "neo4j>=5.25,<6.0",
+    "networkx>=3.4",
+    "llama-index-core>=0.12",
+    "llama-index-graph-stores-neo4j>=0.4",
+    "llama-index-embeddings-huggingface>=0.4",
+    "langchain>=0.3",
+    "langchain-community>=0.3",
+    "langchain-google-genai>=2.0",
+    "langchain-groq>=0.2",
+    "langchain-experimental>=0.3",
+    "langgraph>=0.2,<1.0",             # 1.1 not yet released; track upstream
+]
+
+llm = [
+    "instructor>=1.7",
+    "litellm>=1.50",
+    "openai>=1.55",
+    "google-generativeai>=0.8",
+    "groq>=0.13",
+]
+
+eval = [
+    "ragas>=0.2",
+    "ranx>=0.3",
+    "ir-measures>=0.3.4",
+    "datasets>=3.0",
+]
+
+jobs = [
+    "arq>=0.26",
+    "redis>=5.2",
+    "upstash-redis>=1.2",
+]
+
+obs = [
+    "langfuse>=2.55",
+    "opentelemetry-api>=1.28",
+    "opentelemetry-sdk>=1.28",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "opentelemetry-exporter-otlp>=1.28",
+]
+
+# Convenience aggregator — pip-style "all" extra
+all = [
+    "pathfinder-api[ml,graph,llm,eval,jobs,obs]",
+]
+
+# ─── Dev tooling (PEP 735 dependency-groups, uv-supported) ──────────────────
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "types-pyyaml>=6.0",
+    "ipykernel>=6.29",
+    "respx>=0.21",
+]
+
+# ─── Tooling configuration ──────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data", "scripts/legacy"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "UP", "SIM", "PL", "RUF"]
+ignore = ["E501", "PLR0913"]   # E501 covered by formatter
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

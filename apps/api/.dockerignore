@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+data/raw/
+data/interim/
+data/processed/
+*.parquet
+*.duckdb
+hf_cache/
+.env
+.env.*
+README.md
+tests/

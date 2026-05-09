@@ -1,0 +1,24 @@
+name: Deploy web (Vercel)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/shared-types/**"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+# Vercel auto-deploys on git push when the GitHub integration is connected.
+# This workflow is a deliberate no-op placeholder so the deploy story is documented in code.
+# If you prefer CLI deploys instead of the GitHub integration, replace the body below with:
+#
+#   - run: pnpm dlx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} apps/web
+#
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Vercel GitHub integration handles deploys automatically."
+          echo "Web preview URL will be posted as a PR comment."

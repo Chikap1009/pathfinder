@@ -1,0 +1,81 @@
+# LiteLLM proxy router config.
+# Run locally:  litellm --config litellm.config.yaml --port 4000
+# All app code talks to http://localhost:4000 with model="<group_name>".
+
+model_list:
+  # ─── fast-small: high-volume structured extraction (intent router, query expansion) ───
+  - model_name: fast-small
+    litellm_params:
+      model: groq/llama-3.1-8b-instant
+      api_key: os.environ/GROQ_API_KEY
+      temperature: 0.0
+      max_tokens: 1024
+
+  - model_name: fast-small        # fallback
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      temperature: 0.0
+      max_tokens: 1024
+
+  # ─── big-reasoner: Text2Cypher, hard sub-query decomposition ───
+  - model_name: big-reasoner
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+      temperature: 0.1
+      max_tokens: 2048
+
+  - model_name: big-reasoner      # fallback
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+      temperature: 0.1
+      max_tokens: 2048
+
+  # ─── big-reasoner-batch: KG triple extraction (one-shot batch) ───
+  - model_name: big-reasoner-batch
+    litellm_params:
+      model: cerebras/llama-3.3-70b
+      api_key: os.environ/CEREBRAS_API_KEY
+      temperature: 0.0
+      max_tokens: 4096
+
+  # ─── judge: RAGAS evaluator (different family from generator → reduce self-bias) ───
+  - model_name: judge
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      temperature: 0.0
+      max_tokens: 2048
+
+  # ─── explainer: NL explanation with strict JSON schema ───
+  - model_name: explainer
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      temperature: 0.2
+      max_tokens: 1024
+      response_format: { type: json_object }
+
+  # ─── embedder: optional Voyage fallback when local BGE-M3 is unavailable ───
+  - model_name: embedder
+    litellm_params:
+      model: voyage/voyage-3-large
+      api_key: os.environ/VOYAGE_API_KEY
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 2
+  timeout: 30
+  fallbacks:
+    - { fast-small:        ["fast-small"] }
+    - { big-reasoner:      ["big-reasoner"] }
+    - { big-reasoner-batch:["big-reasoner-batch", "big-reasoner"] }
+    - { judge:             ["judge"] }
+    - { explainer:         ["explainer"] }
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: ""                     # disable DB; cost-track to stdout
+  drop_params: true                    # silently drop unsupported params per provider

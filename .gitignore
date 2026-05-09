@@ -1,0 +1,74 @@
+# --- Node / Next.js ---
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+.env*.local
+next-env.d.ts
+
+# --- Python / uv ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# --- Data --- (keep .gitkeep so dirs survive clone; skip everything else)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/qdrant_storage/
+data/neo4j_data/
+data/neo4j_logs/
+data/neo4j_import/
+data/redis_data/
+*.parquet
+*.duckdb
+*.duckdb.wal
+
+# --- Models / caches ---
+hf_cache/
+.cache/
+ollama_models/
+*.bin
+*.safetensors
+*.gguf
+
+# --- Secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# --- IDE / OS ---
+.vscode/
+!.vscode/settings.json.example
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Misc ---
+.DS_Store
+coverage/
+.nyc_output/

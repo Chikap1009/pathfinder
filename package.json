@@ -1,0 +1,25 @@
+{
+  "name": "pathfinder",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PathFinder — Intent-Aware Explainable Hybrid Retrieval System for people search",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:api": "uv --directory apps/api run uvicorn app.main:app --reload --port 8000",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint && uv --directory apps/api run ruff check .",
+    "format": "pnpm --filter web format && uv --directory apps/api run ruff format .",
+    "test": "pnpm --filter web test && uv --directory apps/api run pytest",
+    "typecheck": "pnpm --filter web typecheck && uv --directory apps/api run mypy app",
+    "openapi": "pnpm --filter web exec openapi-typescript http://localhost:8000/openapi.json -o types/api.d.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
+  }
+}

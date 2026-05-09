@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────────────────────────────────
+   PathFinder design tokens (shadcn new-york + OKLCH; dark by default)
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --background:        oklch(0.985 0.001 286);
+  --foreground:        oklch(0.18 0.005 286);
+  --card:              oklch(1 0 0);
+  --card-foreground:   oklch(0.18 0.005 286);
+  --popover:           oklch(1 0 0);
+  --popover-foreground:oklch(0.18 0.005 286);
+  --primary:           oklch(0.55 0.22 264);
+  --primary-foreground:oklch(0.99 0 0);
+  --secondary:         oklch(0.96 0.01 286);
+  --secondary-foreground: oklch(0.22 0.01 286);
+  --muted:             oklch(0.96 0.01 286);
+  --muted-foreground:  oklch(0.55 0.02 286);
+  --accent:            oklch(0.94 0.03 264);
+  --accent-foreground: oklch(0.22 0.05 264);
+  --destructive:       oklch(0.62 0.24 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border:            oklch(0.92 0.01 286);
+  --input:             oklch(0.92 0.01 286);
+  --ring:              oklch(0.65 0.18 264);
+  --radius:            0.625rem;
+
+  --chart-1: oklch(0.55 0.22 264);
+  --chart-2: oklch(0.65 0.20 174);
+  --chart-3: oklch(0.72 0.16 70);
+  --chart-4: oklch(0.62 0.24 25);
+  --chart-5: oklch(0.55 0.20 320);
+}
+
+.dark {
+  --background:        oklch(0.13 0.01 286);
+  --foreground:        oklch(0.98 0.005 286);
+  --card:              oklch(0.16 0.01 286);
+  --card-foreground:   oklch(0.98 0.005 286);
+  --popover:           oklch(0.16 0.01 286);
+  --popover-foreground:oklch(0.98 0.005 286);
+  --primary:           oklch(0.72 0.18 264);
+  --primary-foreground:oklch(0.13 0.02 264);
+  --secondary:         oklch(0.22 0.02 286);
+  --secondary-foreground: oklch(0.98 0.005 286);
+  --muted:             oklch(0.22 0.02 286);
+  --muted-foreground:  oklch(0.65 0.02 286);
+  --accent:            oklch(0.30 0.05 264);
+  --accent-foreground: oklch(0.98 0.005 286);
+  --destructive:       oklch(0.55 0.24 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border:            oklch(0.30 0.02 286);
+  --input:             oklch(0.30 0.02 286);
+  --ring:              oklch(0.72 0.18 264);
+
+  --chart-1: oklch(0.72 0.20 264);
+  --chart-2: oklch(0.70 0.18 174);
+  --chart-3: oklch(0.76 0.16 70);
+  --chart-4: oklch(0.65 0.24 25);
+  --chart-5: oklch(0.62 0.22 320);
+}
+
+@theme inline {
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-card:              var(--card);
+  --color-card-foreground:   var(--card-foreground);
+  --color-popover:           var(--popover);
+  --color-popover-foreground:var(--popover-foreground);
+  --color-primary:           var(--primary);
+  --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:         var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:  var(--muted-foreground);
+  --color-accent:            var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive:       var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:            var(--border);
+  --color-input:             var(--input);
+  --color-ring:              var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    color-scheme: dark light;
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--color-primary) 30%, transparent);
+  }
+}

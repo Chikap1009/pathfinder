@@ -1,0 +1,53 @@
+name: Keep-alive ping
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"      # every 5 minutes — defeats HF Spaces ~50 min sleep
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API /health
+        env:
+          API_URL: ${{ vars.API_URL }}      # e.g. https://<username>-pathfinder-api.hf.space
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "::warning::API_URL repo variable not set — skipping ping."
+            exit 0
+          fi
+          for i in 1 2 3; do
+            if curl -fsS --max-time 25 "$API_URL/health" > /tmp/health.json; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "::error::All 3 health pings failed."
+          exit 1
+
+      - name: Ping Neo4j AuraDB (anti-pause)
+        env:
+          NEO4J_URI:      ${{ secrets.NEO4J_URI }}
+          NEO4J_USER:     ${{ secrets.NEO4J_USER }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+        run: |
+          if [ -z "$NEO4J_URI" ]; then
+            echo "::warning::NEO4J_URI not set — skipping AuraDB ping."
+            exit 0
+          fi
+          python3 -m pip install --quiet "neo4j>=5.0,<6.0"
+          python3 - <<'PY'
+          import os
+          from neo4j import GraphDatabase
+          drv = GraphDatabase.driver(
+              os.environ["NEO4J_URI"],
+              auth=(os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"]),
+          )
+          with drv.session() as s:
+              n = s.run("RETURN 1 AS ok").single()["ok"]
+              print("AuraDB ok=", n)
+          drv.close()
+          PY
