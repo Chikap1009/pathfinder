@@ -1,0 +1,94 @@
+{
+  "//": "Workspace defaults — committed. Personal overrides go in .vscode/settings.local.json (gitignored).",
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.next": true,
+    "**/.turbo": true,
+    "**/node_modules": true,
+    "**/.venv": true
+  },
+
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "editor.rulers": [100],
+
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/apps/api/.venv/bin/python",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.extraPaths": ["${workspaceFolder}/apps/api"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["apps/api/tests"],
+  "ruff.path": ["${workspaceFolder}/apps/api/.venv/bin/ruff"],
+
+  "[typescript]":      { "editor.defaultFormatter": "biomejs.biome" },
+  "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[javascript]":      { "editor.defaultFormatter": "biomejs.biome" },
+  "[javascriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[json]":            { "editor.defaultFormatter": "biomejs.biome" },
+  "[jsonc]":           { "editor.defaultFormatter": "biomejs.biome" },
+
+  "[markdown]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": { "comments": "off", "strings": "off", "other": "off" }
+  },
+  "[yaml]":            { "editor.defaultFormatter": "redhat.vscode-yaml", "editor.tabSize": 2 },
+  "[dockerfile]":      { "editor.defaultFormatter": "ms-azuretools.vscode-docker" },
+
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "tailwindCSS.includeLanguages": { "typescriptreact": "javascript" },
+
+  "eslint.workingDirectories": [{ "pattern": "apps/web" }],
+  "eslint.format.enable": false,
+
+  "biome.lspBin": "${workspaceFolder}/apps/web/node_modules/@biomejs/biome/bin/biome",
+
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
+    "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose.yml"
+  },
+
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "githubPullRequests.terminalLinksHandler": "github",
+
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+
+  "search.exclude": {
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.turbo": true,
+    "**/data/raw": true,
+    "**/data/interim": true,
+    "**/data/processed": true,
+    "**/pnpm-lock.yaml": true,
+    "**/uv.lock": true
+  }
+}

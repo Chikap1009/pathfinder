@@ -50,7 +50,7 @@ fields:
     parser:
       delimiter: ","
       proficiency_pattern: '\(([^)]+)\)'         # captures "(Beginner)" → "Beginner"
-      proficiency_levels: [Beginner, Advanced Beginner, Competent, Advanced]
+      proficiency_levels: [Beginner, Advanced Beginner, Competent, Proficient, Expert]
     notes:
       - "Format: 'Skill Name (Proficiency), Skill Name (Proficiency), …'"
 
@@ -59,14 +59,14 @@ fields:
     confidence: high
     kind: skills_with_proficiency
     required: false
-    parser: { delimiter: ",", proficiency_pattern: '\(([^)]+)\)', proficiency_levels: [Beginner, Advanced Beginner, Competent, Advanced] }
+    parser: { delimiter: ",", proficiency_pattern: '\(([^)]+)\)', proficiency_levels: [Beginner, Advanced Beginner, Competent, Proficient, Expert] }
 
   soft_skills:
     column: soft_skills
     confidence: high
     kind: skills_with_proficiency
     required: false
-    parser: { delimiter: ",", proficiency_pattern: '\(([^)]+)\)', proficiency_levels: [Beginner, Advanced Beginner, Competent, Advanced] }
+    parser: { delimiter: ",", proficiency_pattern: '\(([^)]+)\)', proficiency_levels: [Beginner, Advanced Beginner, Competent, Proficient, Expert] }
     notes:
       - "Often NaN — guard for missing rows."
 
@@ -98,12 +98,13 @@ fields:
 
 unmapped_columns: []  # all 8 columns mapped after the manual pass.
 
-# Proficiency ordinal scale for filtering & ranking.
+# Proficiency ordinal scale (Dreyfus model) for filtering & ranking.
 proficiency_ordinal:
   Beginner: 1
   Advanced Beginner: 2
   Competent: 3
-  Advanced: 4
+  Proficient: 4
+  Expert: 5
 
 # Canonical text used for BGE-M3 indexing (joined at ETL time).
 # This is the field BM25 + dense + sparse + ColBERT all index over.

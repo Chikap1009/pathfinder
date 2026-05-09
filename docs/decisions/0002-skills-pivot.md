@@ -36,9 +36,12 @@ The actual `profiles.csv` (sourced from a public dataset repository on GitHub) h
 
 There is **no source data** for company, industry, location, education, or career
 history. There is, however, **richer skill data** than the original plan assumed:
-3-way categorisation (core / secondary / soft) with 4 ordinal proficiency levels
-(`Beginner < Advanced Beginner < Competent < Advanced`) plus a curated list of roles
-each candidate could fill.
+3-way categorisation (core / secondary / soft) with **5 ordinal proficiency levels
+following the Dreyfus model** (`Beginner < Advanced Beginner < Competent <
+Proficient < Expert`) plus a curated list of roles each candidate could fill.
+
+(Note: ADR-0002 originally documented 4 levels; corrected to 5 on 2026-05-09 after
+the Day-2 ETL audit found `Proficient` and `Expert` as common labels in the data.)
 
 The skills-only Person side is actually a feature, not a bug: it forces a richer
 skill-ontology story (ESCO canonicalisation, proficiency-aware ranking) that's a
@@ -95,7 +98,7 @@ violating the plan's faithfulness goals (RAGAS ≥ 0.95).
   `RELATED_TO`, and `CHILD_OF`. Few portfolio projects ship a real ontology
   integration; this becomes a recruiter talking-point.
 - **Proficiency-aware ranking** is a unique surface area: the proficiency tags
-  parsed from each cell give us a 4-level ordinal that we can use both as a
+  parsed from each cell give us a 5-level ordinal that we can use both as a
   hard filter (`min_proficiency=Competent`) and as a soft re-ranking signal.
 - **Role-fit search** is data-native: `(Person)-[:CAN_FILL]→(Role)` lets us
   answer queries like _"Find candidates for an X role"_ without inventing the
@@ -120,7 +123,7 @@ violating the plan's faithfulness goals (RAGAS ≥ 0.95).
 ### Operational changes (Week 1)
 
 - `scripts/01_etl.py` — section-parse the proficiency-tagged skill cells:
-  regex `^(?P<name>.+?)\s*\((?P<prof>Beginner|Advanced Beginner|Competent|Advanced)\)\s*$`.
+  regex `^(?P<name>.+?)\s*\((?P<prof>Beginner|Advanced Beginner|Competent|Proficient|Expert)\)\s*$`.
 - `scripts/04_kg_build.py` — three deterministic passes (skills, roles, ESCO
   augmentation), skipping the `SchemaLLMPathExtractor` from the plan since we no
   longer need to extract relations from prose. The extractor is **kept in the

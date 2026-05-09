@@ -81,8 +81,8 @@ LLM extractor.
 
 Person side:
 - `(Person)-[:HAS_SKILL {category, proficiency, source}]→(Skill)`
-  · `category ∈ {core, secondary, soft}` · `proficiency ∈ {1..4}`
-  (1 = Beginner · 2 = Advanced Beginner · 3 = Competent · 4 = Advanced)
+  · `category ∈ {core, secondary, soft}` · `proficiency ∈ {1..5}` (Dreyfus model)
+  (1 = Beginner · 2 = Advanced Beginner · 3 = Competent · 4 = Proficient · 5 = Expert)
 - `(Person)-[:CAN_FILL {rank}]→(Role)` *(rank = position in `potential_roles` list)*
 - `(Person)-[:NEIGHBOR {ppr_score}]→(Person)` *(precomputed top-25 via NetworkX PPR)*
 

@@ -55,9 +55,13 @@ ollama_models/
 *.key
 
 # --- IDE / OS ---
-.vscode/
-!.vscode/settings.json.example
+# Commit shared workspace defaults; ignore personal overrides.
+.vscode/*
+!.vscode/settings.json
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.vscode/settings.local.json
 .idea/
 .DS_Store
 Thumbs.db

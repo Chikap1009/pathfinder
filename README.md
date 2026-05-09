@@ -40,7 +40,7 @@ The corpus is **two-sided**, sourced from a public dataset repository on GitHub:
 
 | File | Rows / Items | Side | Notes |
 | ---- | -----------: | ---- | ----- |
-| `profiles.csv`     | 1,782 | candidate | id, name, skills (3-way: core / secondary / soft, with Beginner / Advanced Beginner / Competent / Advanced proficiency tags), years_of_experience, potential_roles, skill_summary |
+| `profiles.csv`     | 1,782 | candidate | id, name, skills (3-way: core / secondary / soft, with **Dreyfus 5-stage** proficiency tags: Beginner / Advanced Beginner / Competent / Proficient / Expert), years_of_experience, potential_roles, skill_summary |
 | `demands_data.csv` | 1,081 | demand    | id, city / state / country, primary / secondary skills, experience range, designation |
 | `jd_dataset.zip`   |   289 | JD        | per-job folder with `raw_jd.txt` (JSON: industry + raw text) and `enhanced_job_description.md` (LLM-enhanced sections: title, location, responsibilities, must-have / good-to-have skills) |
 

@@ -1,0 +1,118 @@
+# Schema map for demands_data.csv — confirmed by user 2026-05-09.
+# Format: structured CSV of job demand records (the "Job" side, structured form).
+# Companion to jds.yaml (the unstructured JD markdown side).
+
+version: 1
+generated_by: manual after inspection — see scripts/01_etl.py
+source: data/raw/demands_data.csv
+row_count: 1081
+column_count: 10
+
+columns:
+  - { name: id,               dtype: object  }
+  - { name: state,            dtype: object  }   # 99.8% null — useless
+  - { name: city,             dtype: object  }   # 51.3% null
+  - { name: country,          dtype: object  }   # 100% present, 61 unique
+  - { name: job_title,        dtype: object  }   # 98.6% null — useless; use designation instead
+  - { name: primary_skills,   dtype: object  }   # 97.6% present
+  - { name: secondary_skills, dtype: object  }   # 66.7% null
+  - { name: experience_lower, dtype: int64   }   # mostly 0; soft signal only
+  - { name: experience_upper, dtype: int64   }   # mostly 0; soft signal only
+  - { name: designation,      dtype: object  }   # 97% present, 248 unique — REAL role field
+
+fields:
+  id:
+    column: id
+    confidence: high
+    kind: primary_key
+    required: true
+    notes: ['e.g. "DBS-__DBS-__2025__2591399" — namespaced as job_<id> downstream to avoid Person collision']
+
+  designation:
+    column: designation
+    confidence: high
+    kind: short_text
+    required: false
+    notes:
+      - "Use this as the primary role/title (job_title is 98.6% null)."
+      - "248 unique values; some span multiple roles (e.g. 'Functional Lead with Oracle ERP Cloud - AR, GL...')"
+
+  primary_skills:
+    column: primary_skills
+    confidence: high
+    kind: skills_no_proficiency
+    required: false
+    parser: { delimiter: "," }
+    notes:
+      - "Comma-separated skill names WITHOUT proficiency tags (unlike profiles)."
+
+  secondary_skills:
+    column: secondary_skills
+    confidence: high
+    kind: skills_no_proficiency
+    required: false
+    parser: { delimiter: "," }
+    notes:
+      - "Same format as primary_skills; ~67% null."
+      - "Trailing commas observed (e.g. 'Azure,Azure API Management,Java,') — strip empty tokens."
+
+  city:
+    column: city
+    confidence: medium
+    kind: short_text
+    required: false
+    notes:
+      - "51.3% null. Top values: Noida (273), Chennai (49), Bengaluru (43)."
+
+  country:
+    column: country
+    confidence: high
+    kind: short_text
+    required: false
+    parser:
+      aliases:
+        "USA": "United States"
+        "United States of America": "United States"
+        "UK": "United Kingdom"
+        "Britain": "United Kingdom"
+    notes:
+      - "100% present, 61 unique. India dominates (524). Aliases collapsed at ETL time."
+
+  state:
+    column: state
+    confidence: absent_in_practice
+    kind: short_text
+    required: false
+    notes:
+      - "Only 2/1081 rows have a value (typo: 'Maharastra'). Effectively unused — keep column but skip indexing."
+
+  job_title:
+    column: job_title
+    confidence: absent_in_practice
+    kind: short_text
+    required: false
+    notes:
+      - "Only 15/1081 rows have a value. Effectively unused — designation is the real role field."
+
+  experience_lower:
+    column: experience_lower
+    confidence: high
+    kind: numeric
+    required: false
+    notes:
+      - "Only 81/1081 rows non-zero. Soft signal at best."
+
+  experience_upper:
+    column: experience_upper
+    confidence: high
+    kind: numeric
+    required: false
+    notes: ["Same caveat as experience_lower."]
+
+# Canonical text used for BM25 + BGE-M3 indexing (joined at ETL time).
+canonical_text_template: |
+  Designation: {designation}
+  Primary skills: {primary_skills}
+  Secondary skills: {secondary_skills}
+  Location: {city}, {country}
+  Experience: {experience_lower}–{experience_upper} years

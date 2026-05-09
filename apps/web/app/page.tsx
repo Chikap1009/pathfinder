@@ -29,7 +29,7 @@ const TWO_SIDES = [
     icon: Users,
     label: "Candidates",
     count: "1,782",
-    detail: "skill-tagged profiles · 4-level proficiency · suggested roles",
+    detail: "skill-tagged profiles · Dreyfus 5-stage proficiency · suggested roles",
   },
   {
     icon: Briefcase,

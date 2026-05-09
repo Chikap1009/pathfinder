@@ -1,0 +1,27 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "ms-toolsai.jupyter",
+
+    "biomejs.biome",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "yoavbls.pretty-ts-errors",
+
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions",
+
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "aaron-bond.better-comments"
+  ],
+  "unwantedRecommendations": []
+}

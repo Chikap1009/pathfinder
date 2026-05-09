@@ -1,0 +1,112 @@
+# Schema map for jd_dataset.zip — confirmed by user 2026-05-09.
+# Format: zipped folder per job. Each `{folder_id}/` has TWO files:
+#   - raw_jd.txt — JSON with keys: industry (often empty), raw_jd (free-text JD)
+#   - enhanced_job_description.md — LLM-enhanced structured markdown with 6 sections
+# Companion to demands.yaml (the structured-CSV side).
+
+version: 1
+generated_by: manual after inspection — see scripts/01_etl.py
+source: data/raw/jd_dataset.zip
+job_count: 289
+
+# ─── raw_jd.txt format ───────────────────────────────────────────────────────
+raw_jd:
+  format: json
+  keys:
+    industry:
+      kind: short_text
+      confidence: medium
+      notes:
+        - "Often empty string or 'Any Industry' — low-signal."
+        - "Useful as a fallback when enhanced_job_description.md `Client Industry` is missing."
+    raw_jd:
+      kind: long_text
+      confidence: high
+      notes:
+        - "Original recruiter-supplied JD text. Includes bracketed metadata (Job Title / Location / Country / Experience Required / Primary Skills / Secondary Skills) followed by free prose."
+        - "Pre-processed via regex to extract metadata fields when present."
+
+# ─── enhanced_job_description.md sections ────────────────────────────────────
+# Every JD reliably has these 6 H2 headers (verified across 30 sampled files).
+# Parser: split on `^## ` H2 boundaries; section body is markdown until next H2 or EOF.
+enhanced_jd:
+  format: markdown
+  section_pattern: '^##\s+(.+?)\s*$'
+  sections:
+    "Job Title":
+      kind: short_text
+      confidence: high
+      required: true
+    "Location":
+      kind: short_text
+      confidence: high
+      required: true
+      parser:
+        # Format observed: "City, Country" (e.g. "Pune, India")
+        # Split on first comma; left → city, right → country.
+        delimiter: ","
+    "Client Industry":
+      kind: short_text
+      confidence: high
+      required: false
+      notes:
+        - "Higher-quality than raw_jd.industry; ESCO-canonicalisable."
+    "Detailed Responsibilities":
+      kind: long_text
+      confidence: high
+      required: true
+      parser:
+        # Bulleted list — each line `- ...`. Keep as joined prose for embedding.
+        kind: markdown_bullets
+    "Skill Requirements":
+      kind: nested_text
+      confidence: high
+      required: true
+      sub_sections:
+        "Must Have":
+          kind: skills_no_proficiency
+          parser: { kind: markdown_bullets }
+          notes: ['Bulleted list of "must have" skills + qualifications.']
+        "Good to Have":
+          kind: skills_no_proficiency
+          parser: { kind: markdown_bullets }
+          notes: ['Bulleted; sometimes phrased as "Nice to have" or "Preferred".']
+        "Educational Qualifications":
+          kind: long_text
+          parser: { kind: markdown_bullets }
+          notes: ['Degree requirements; not a skill list.']
+    "Other Requirements":
+      kind: long_text
+      confidence: high
+      required: false
+      notes:
+        - "Free prose: shift work, travel, on-call, certifications. Useful long-tail signal."
+
+# Skills extraction strategy from enhanced_jd Skill Requirements:
+#   Must Have   → REQUIRES_SKILL {priority: "must_have",   category: "primary"}
+#   Good to Have→ REQUIRES_SKILL {priority: "good_to_have", category: "secondary"}
+#   Educational Qualifications → does NOT become REQUIRES_SKILL — separate field on Job node.
+
+# Canonical text for BM25 + BGE-M3 indexing (joined at ETL time).
+canonical_text_template: |
+  Title: {job_title}
+  Designation: {designation_from_demands_or_title}
+  Industry: {client_industry}
+  Location: {location}
+  Responsibilities:
+  {detailed_responsibilities}
+  Must have skills: {must_have_skills}
+  Good to have skills: {good_to_have_skills}
+  Other requirements: {other_requirements}
+
+# Pre-merge with demands_data.csv where possible.
+# We do NOT have a guaranteed join key between JD folder ids (1..289) and demands ids
+# (DBS-__... strings). We treat them as distinct sources and union into a single Job
+# table at ETL time, with a `source` column ('demands_csv' or 'jd_zip') so retrieval
+# can weigh structured vs unstructured fields appropriately.
+join_with_demands:
+  strategy: union_no_join
+  rationale:
+    - "JD folder ids are 1..289 (no demand-id mapping in the bundle)."
+    - "Naive title-match lookup is fragile (demands.job_title is 98.6% null)."
+    - "Treat as separate Job rows with distinct id namespaces (job_demand_<id>, job_jd_<id>)."
