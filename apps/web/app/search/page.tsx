@@ -8,7 +8,8 @@ export default function SearchPage() {
       <header className="flex flex-col gap-2">
         <h1 className="font-mono text-3xl font-semibold tracking-tight">Search</h1>
         <p className="text-muted-foreground">
-          Streaming Perplexity-style results — wired Week 4.
+          Two-sided search — candidates, jobs, or candidate ↔ job match. Streaming
+          Perplexity-style results. Wired Week 4.
         </p>
       </header>
 

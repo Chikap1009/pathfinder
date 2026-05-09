@@ -65,26 +65,47 @@ User query ───► │  STAGE 0 — Intent router (Instructor + Pydantic)  
 
 ## Knowledge graph schema
 
-Pivoted from the original LinkedIn-style design after Day-1 schema introspection
-revealed the dataset is skills-and-roles-focused (no company / industry / location
-data). See [decisions/0002-skills-pivot.md](decisions/0002-skills-pivot.md).
+Two-sided: `Person` and `Job` nodes both connect to a shared `Skill` ontology.
+The schema evolved across two ADRs — see
+[decisions/0002-skills-pivot.md](decisions/0002-skills-pivot.md) (Person-side
+pivot) and [decisions/0003-two-sided-corpus.md](decisions/0003-two-sided-corpus.md)
+(Job-side reintroduction + `MATCHES` derived edge).
 
-**Nodes**: `Person, Skill, Role`. Each carries an `embedding` (BGE-M3 dense, 1024-d).
+**Nodes** (each with `embedding` = BGE-M3 dense, 1024-d):
 
-Relations (with `confidence`, `evidence_chunk_id`):
+`Person, Job, Skill, Role, Designation, Location, Industry`. Plus a
+`_PendingType` quarantine label for novel relations / labels surfaced by the
+LLM extractor.
 
+**Relations** (with `confidence`, `evidence_chunk_id`):
+
+Person side:
 - `(Person)-[:HAS_SKILL {category, proficiency, source}]→(Skill)`
   · `category ∈ {core, secondary, soft}` · `proficiency ∈ {1..4}`
   (1 = Beginner · 2 = Advanced Beginner · 3 = Competent · 4 = Advanced)
 - `(Person)-[:CAN_FILL {rank}]→(Role)` *(rank = position in `potential_roles` list)*
-- `(Skill)-[:RELATED_TO {weight}]→(Skill)` *(seeded from ESCO `relatedSkill`)*
-- `(Skill)-[:CHILD_OF]→(Skill)` *(ESCO hierarchy)*
 - `(Person)-[:NEIGHBOR {ppr_score}]→(Person)` *(precomputed top-25 via NetworkX PPR)*
 
+Job side:
+- `(Job)-[:REQUIRES_SKILL {priority, category}]→(Skill)`
+  · `priority ∈ {must_have, good_to_have}` · `category ∈ {primary, secondary}`
+- `(Job)-[:IS_DESIGNATION]→(Designation)`
+- `(Job)-[:AT_LOCATION]→(Location)`
+- `(Job)-[:IN_INDUSTRY]→(Industry)`
+- `(Job)-[:NEIGHBOR {ppr_score}]→(Job)` *(precomputed top-25)*
+
+Shared (ESCO-seeded):
+- `(Skill)-[:RELATED_TO {weight}]→(Skill)` *(ESCO `relatedSkill`)*
+- `(Skill)-[:CHILD_OF]→(Skill)` *(ESCO hierarchy)*
+
+Derived (precomputed offline, refreshed nightly):
+- `(Person)-[:MATCHES {score, reason_chunks, computed_at}]→(Job)` — top-K bipartite
+  matches per Person; weighted blend of skill-overlap (Jaccard, proficiency-weighted),
+  designation similarity, prose cosine, and experience-range fit.
+
 Dynamic schema policy: novel labels → `(:_PendingType {name, count, examples})`,
-promoted to first-class once `count > 50` and a critic LLM validates. (This stays
-relevant when we ingest ESCO skills and their long-tail relatedness data — novel
-sub-categories will surface there.)
+promoted to first-class once `count > 50` and a critic LLM validates. (Stays
+relevant for ESCO long-tail relatedness data and JD designation parsing.)
 
 ## Deployment topology
 

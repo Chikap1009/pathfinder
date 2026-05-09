@@ -11,7 +11,8 @@
 PathFinder's hybrid retrieval pipeline needs three orthogonal candidate signals to fuse via RRF:
 
 1. **Lexical** — exact-token matching on rare technical entities (`k8s`, `gRPC`,
-   `LangGraph`, model names, library versions). Necessary to satisfy the PS-1 brief.
+   `LangGraph`, model names, library versions). Necessary because dense embeddings
+   alone consistently miss out-of-vocabulary technical jargon at the long tail.
 2. **Dense semantic** — paraphrase / out-of-vocabulary recall ("ML engineer" matches
    "machine-learning practitioner").
 3. **Multi-vector / late-interaction** — fine-grained per-token matching (ColBERT-style)

@@ -1,4 +1,4 @@
-"""DAY-1 schema introspection for profiles.csv.
+"""Schema introspection for profiles.csv.
 
 Idempotent. Run with:
     uv run python scripts/00_inspect_csv.py
@@ -6,7 +6,8 @@ Idempotent. Run with:
     uv run python scripts/00_inspect_csv.py --no-download   # skip remote fetch
 
 What it does:
-  1. Tries to download profiles.csv from the IITMandiHack60 repo (main + master).
+  1. Tries to download profiles.csv from the configured public dataset URLs
+     (main + master branches; jsdelivr CDN as fallback).
   2. Inspects: row count, columns + dtypes, null %, sample rows, value cardinality.
   3. Heuristically maps columns to canonical fields (id, name, headline, summary,
      skills, experience, education, location, years_experience, current_company,
@@ -457,7 +458,7 @@ def main(
                 console.print(
                     "[red bold]Could not download profiles.csv automatically.[/]\n"
                     f"Place it at [cyan]{csv}[/] manually then re-run this script.\n"
-                    "Hint: clone the IITMandiHack60 repo or copy the file from the dataset bundle."
+                    "Hint: copy the file from the public dataset bundle into data/raw/."
                 )
                 raise typer.Exit(code=2)
         else:

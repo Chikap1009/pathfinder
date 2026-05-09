@@ -1,6 +1,10 @@
-# ADR-0002 — Pivot to a skills-centric KG schema for PS-1
+# ADR-0002 — Pivot to a skills-centric KG schema (Person side)
 
-- **Status**: Accepted
+- **Status**: Accepted, partially superseded by [ADR-0003](0003-two-sided-corpus.md)
+  on 2026-05-09 (the same day) once the full dataset was inventoried — Job-side
+  relations `LOCATED_IN`, `IN_INDUSTRY`, and a new `REQUIRES_SKILL` edge are
+  re-introduced for the Job node label. The Person-side conclusions in this ADR
+  remain in force.
 - **Date**: 2026-05-09
 - **Deciders**: PathFinder lead engineer (with explicit user confirmation at the
   Day-1 STOP-AND-CONFIRM checkpoint after running `scripts/00_inspect_csv.py`).
@@ -10,13 +14,13 @@
 
 ## Context
 
-The canonical project plan (`compass_artifact_*.md` §3.1) assumed a LinkedIn-style
-profile schema: `id, name, headline, summary, skills, experience JSON, education JSON,
-location, years_experience, current_company, current_title, industry`. The KG schema
-followed: `Person -[:WORKED_AT]→ Company`, `LOCATED_IN`, `STUDIED_AT`, `IN_INDUSTRY`,
-`SIMILAR_TO (Company-Company)`, `COLLABORATED_WITH`.
+The initial design assumed a LinkedIn-style profile schema: `id, name, headline,
+summary, skills, experience JSON, education JSON, location, years_experience,
+current_company, current_title, industry`. The KG schema followed: `Person -[:WORKED_AT]→
+Company`, `LOCATED_IN`, `STUDIED_AT`, `IN_INDUSTRY`, `SIMILAR_TO (Company-Company)`,
+`COLLABORATED_WITH`.
 
-The actual `profiles.csv` from `github.com/anonymous-devx/IITMandiHack60` has
+The actual `profiles.csv` (sourced from a public dataset repository on GitHub) has
 **1,782 rows × 8 columns** — confirmed via `scripts/00_inspect_csv.py` on 2026-05-09:
 
 | Column | Format |
@@ -36,9 +40,9 @@ history. There is, however, **richer skill data** than the original plan assumed
 (`Beginner < Advanced Beginner < Competent < Advanced`) plus a curated list of roles
 each candidate could fill.
 
-The canonical plan (§13) explicitly anticipated this branch:
-> _"if profiles.csv has only id/name/skills … you'll lean harder into the KG and
-> skill-ontology story."_
+The skills-only Person side is actually a feature, not a bug: it forces a richer
+skill-ontology story (ESCO canonicalisation, proficiency-aware ranking) that's a
+stronger interview narrative than yet-another LinkedIn-clone search.
 
 ## Decision
 
@@ -46,7 +50,7 @@ Pivot the KG schema to a **skills-and-roles** ontology. Drop relations whose sou
 fields don't exist; keep + enrich relations the data does support; add new relations
 the data uniquely enables.
 
-### Knowledge graph — final schema for PS-1
+### Knowledge graph — Person-side schema (extended on the Job side in ADR-0003)
 
 **Nodes**
 

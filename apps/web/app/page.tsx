@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Network, BarChart3, FileCog2, Sparkles } from "lucide-react";
+import { ArrowRight, Network, BarChart3, FileCog2, Sparkles, Users, Briefcase, Link2 } from "lucide-react";
 
 const FEATURES = [
   {
@@ -24,34 +24,57 @@ const FEATURES = [
   },
 ] as const;
 
+const TWO_SIDES = [
+  {
+    icon: Users,
+    label: "Candidates",
+    count: "1,782",
+    detail: "skill-tagged profiles · 4-level proficiency · suggested roles",
+  },
+  {
+    icon: Briefcase,
+    label: "Jobs",
+    count: "1,370",
+    detail: "demand records + LLM-enhanced JDs · industry · location · designation",
+  },
+  {
+    icon: Link2,
+    label: "Bridge",
+    count: "ESCO",
+    detail: "13.9 k canonical skills · hierarchy + relatedness · CC-BY",
+  },
+] as const;
+
 export default function Home() {
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-16 px-4 py-16 md:py-24">
       <header className="flex flex-col gap-6">
         <span className="border-border bg-muted/40 text-muted-foreground inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs font-mono">
           <span className="bg-primary inline-block h-1.5 w-1.5 rounded-full" />
-          HCLTech IIT Mandi Hack60 · PS-1
+          two-sided talent matching · personal research project
         </span>
         <h1 className="font-mono text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-          Find the right person.
+          Match candidates to jobs.
           <br />
-          <span className="text-muted-foreground">Explain why they're right.</span>
+          <span className="text-muted-foreground">Explain every match.</span>
         </h1>
         <p className="text-muted-foreground max-w-2xl text-lg leading-relaxed">
-          PathFinder is an intent-aware, explainable hybrid retrieval engine for a
-          skills-and-roles profile corpus. It understands queries like{" "}
+          PathFinder is an intent-aware, explainable hybrid retrieval engine for
+          two-sided talent matching. Search the candidate side ({" "}
           <em className="text-foreground not-italic">
             "Senior Python developer with cloud experience at Competent or higher"
-          </em>{" "}
-          or{" "}
-          <em className="text-foreground not-italic">
-            "Find candidates who could fill a Regulatory Affairs Manager role"
           </em>
-          , decomposes them, retrieves through three parallel channels, fuses with
-          RRF, reranks with a cross-encoder, traverses a Neo4j knowledge graph
-          (Person → HAS_SKILL → Skill, Person → CAN_FILL → Role, Skill ↔ ESCO),
-          and returns ranked results with citations, matched-skill evidence, and
-          per-stage scores.
+          ), the job side ({" "}
+          <em className="text-foreground not-italic">
+            "Roles in Bengaluru asking for Selenium + Azure"
+          </em>
+          ), or compute candidate ↔ job fit. Queries decompose into structural filters
+          and semantic intent, retrieve through three parallel channels (BM25 +
+          BGE-M3 dense + learned-sparse), fuse with RRF, rerank with a cross-encoder,
+          and traverse a Neo4j knowledge graph (Person → HAS_SKILL → Skill ←
+          REQUIRES_SKILL ← Job, with ESCO-canonicalised skills, locations, and
+          industries) for relational queries. Every result carries citations, matched
+          evidence, and per-stage scores.
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
@@ -68,6 +91,22 @@ export default function Home() {
           </Link>
         </div>
       </header>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {TWO_SIDES.map(({ icon: Icon, label, count, detail }) => (
+          <div
+            key={label}
+            className="border-border bg-card text-card-foreground rounded-lg border p-5"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <Icon className="text-primary h-5 w-5" />
+              <span className="font-mono text-2xl font-semibold tabular-nums">{count}</span>
+            </div>
+            <h3 className="mb-1 font-medium">{label}</h3>
+            <p className="text-muted-foreground text-sm">{detail}</p>
+          </div>
+        ))}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {FEATURES.map(({ title, desc, icon: Icon }) => (
