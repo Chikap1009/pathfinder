@@ -74,16 +74,31 @@ populated once the explanation generator ships (Week 5).
 
 ### Overall (mean of candidate + job tasks)
 
-| Config                                     | nDCG@10 | Recall@100 | MRR@10 |  MAP  | Search latency |
-| ------------------------------------------ | ------: | ---------: | -----: | ----: | -------------: |
-| BM25 only (baseline)                       |   0.604 |      0.770 |  0.634 | 0.620 |     0.1 ms / q |
-| BGE-M3 dense alone                         |   0.590 |      0.759 |  0.612 | 0.593 |     0.6 ms / q |
-| **+ RRF fusion (k=60, BM25 + dense)**      | **0.619** | **0.760** | **0.657** | **0.629** | **2.5 ms / q** |
-| + cross-encoder rerank (bge-reranker-v2-m3) |  _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
-| + KG augmentation                          |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
-| + DAT fusion (ablation)                    |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
+| Config                                          | nDCG@10 | Recall@100 | MRR@10 |  MAP  | Search latency |
+| ----------------------------------------------- | ------: | ---------: | -----: | ----: | -------------: |
+| BM25 only (baseline)                            |   0.604 |      0.770 |  0.634 | 0.620 |     0.1 ms / q |
+| BGE-M3 dense alone                              |   0.590 |      0.759 |  0.612 | 0.593 |     0.6 ms / q |
+| **+ RRF fusion (k=60, BM25 + dense)**           | **0.619** | **0.760** | **0.657** | **0.629** | **2.5 ms / q** |
+| + cross-encoder rerank (top-25 funnel)          |   0.598 |      0.760 |  0.614 | 0.604 |   ~285 ms / q  |
+| + cross-encoder rerank (top-50 funnel)          |   0.584 |      0.760 |  0.590 | 0.589 |   ~480 ms / q  |
+| + KG augmentation                               |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
+| + DAT fusion (ablation)                         |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
 
-Encoding latency (BGE-M3 dense, FP16 on RTX 4060): 1.7 ms / query, 10 ms / doc at index time.
+Encoding latency (BGE-M3 dense, FP16 on RTX 4060): 1.7 ms / query, 10 ms / doc at
+index time. Cross-encoder (bge-reranker-v2-m3, FP16, RTX 4060): ~10 ms per
+(query, doc) pair at batch=32.
+
+**Honest finding on the cross-encoder rows:** the reranker slightly **underperforms RRF**
+on this deterministic eval set. This is the canonical-IR-literature trade-off
+captured live: bge-reranker-v2-m3 is trained on natural-language passage retrieval
+(MS-MARCO, MIRACL); on our skill-token-anchored queries (e.g. _"Java SQL DevOps
+engineer at Beginner or higher"_) the model occasionally favors a semantically-
+similar designation over the literal lexical anchor and demotes the gold below
+rank 10. Per-task split shows it: candidate-search nDCG@10 lifts +1.4% (the
+queries are slightly more natural) while job-search drops -4.8% (lexical anchors
+dominate the queries). The expected win materialises on natural-language
+paraphrased queries — that stratum lands when we wire Gemini-generated
+paraphrases (Week 5).
 
 ### Per-task split
 
