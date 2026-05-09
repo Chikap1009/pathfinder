@@ -45,14 +45,30 @@ def per_task_scores(
     queries_df: pd.DataFrame,
     name: str = "run",
 ) -> dict[str, dict[str, float]]:
-    """Aggregate metrics overall + per-task split (`candidate_search` / `job_search`)."""
+    """Aggregate metrics overall + per-task split + per-stratum split (if present)."""
     out: dict[str, dict[str, float]] = {"overall": score(qrels_dict, runs_dict, name=name)}
-    for task in queries_df["task"].unique():
+
+    # Per-task split (candidate_search / job_search)
+    for task in sorted(queries_df["task"].unique()):
         task_qids = set(queries_df.loc[queries_df["task"] == task, "qid"])
         sub_qrels = {q: r for q, r in qrels_dict.items() if q in task_qids}
         sub_runs = {q: r for q, r in runs_dict.items() if q in task_qids}
         if sub_qrels:
             out[task] = score(sub_qrels, sub_runs, name=f"{name}::{task}")
+
+    # Per-stratum split (original / paraphrase)
+    if "stratum" in queries_df.columns:
+        # Treat NaN / missing as "original" so the split is exhaustive.
+        strat_col = queries_df["stratum"].fillna("original")
+        for stratum in sorted(strat_col.unique()):
+            qids = set(queries_df.loc[strat_col == stratum, "qid"])
+            sub_qrels = {q: r for q, r in qrels_dict.items() if q in qids}
+            sub_runs = {q: r for q, r in runs_dict.items() if q in qids}
+            if sub_qrels:
+                out[f"stratum:{stratum}"] = score(
+                    sub_qrels, sub_runs, name=f"{name}::stratum:{stratum}"
+                )
+
     return out
 
 

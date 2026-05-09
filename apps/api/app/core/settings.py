@@ -13,7 +13,18 @@ from typing import Literal
 from pydantic import Field, HttpUrl, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+
+def _find_repo_root() -> Path:
+    """Walk up from this file until the repo-root marker `pnpm-workspace.yaml` appears."""
+    here = Path(__file__).resolve()
+    for parent in (here, *here.parents):
+        if (parent / "pnpm-workspace.yaml").exists():
+            return parent
+    # Fallback: best-effort assumption based on the historical layout.
+    return here.parents[3]
+
+
+REPO_ROOT = _find_repo_root()
 
 
 class Settings(BaseSettings):
