@@ -54,10 +54,12 @@ Recall@100 ≥ 0.97 &nbsp;·&nbsp; nDCG@10 ≥ 0.55 &nbsp;·&nbsp; RAGAS Faithfu
 
 | Surface | URL |
 | ------- | --- |
-| Web app (Vercel) | <!-- LINK_PLACEHOLDER --> |
-| API (HF Spaces)  | <!-- LINK_PLACEHOLDER --> |
-| KG demo (AuraDB) | <!-- LINK_PLACEHOLDER --> |
-| Eval dashboard   | <!-- LINK_PLACEHOLDER --> |
+| Web app (Vercel) | <https://pathfinder-web-wheat.vercel.app> |
+| API (HF Spaces)  | <https://chikap1009-pathfinder-api.hf.space> |
+| API docs (Swagger) | <https://chikap1009-pathfinder-api.hf.space/docs> |
+| Eval dashboard   | <https://pathfinder-web-wheat.vercel.app/eval> |
+
+> **Cold-start note:** the HF Space free tier sleeps after ~50 min idle; the keep-alive cron pings it every 5 min so the first request after a long pause may take ~30 s while BGE-M3 + the cross-encoder load.
 
 ## Architecture
 
@@ -242,6 +244,15 @@ pathfinder/
 | Frontend | Next.js 16 + Tailwind v4 + shadcn (new-york) | Industry default. |
 | Streaming UI | Vercel AI SDK 5 (typed UIMessage data parts) | Per-stage progress chips. |
 | Observability | Langfuse Cloud Hobby (50 k obs / mo) | OTLP-native. |
+
+## Deployment
+
+Three free-tier targets — Vercel (web), Hugging Face Spaces / Docker (api),
+Neo4j AuraDB Free (kg) — combined cost **$0/mo**. The HF Space Docker image
+fetches precomputed retrieval indexes from a public GitHub release at build
+time, so no LFS quota is consumed. A keep-alive cron pings `/health` and the
+graph every 5 min to prevent free-tier sleeps. End-to-end guide:
+[docs/deployment.md](docs/deployment.md).
 
 ## Licence
 
