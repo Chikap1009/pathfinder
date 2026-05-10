@@ -76,43 +76,83 @@ populated once the explanation generator ships (Week 5).
 
 ### On the original deterministic 100-query set (skill-token anchored)
 
-| Config                                          | nDCG@10 | Recall@100 | MRR@10 |  MAP  | Search latency |
-| ----------------------------------------------- | ------: | ---------: | -----: | ----: | -------------: |
-| BM25 only (baseline)                            |   0.604 |      0.770 |  0.634 | 0.620 |     0.1 ms / q |
-| BGE-M3 dense alone                              |   0.589 |      0.759 |  0.612 | 0.593 |     0.6 ms / q |
-| **+ RRF fusion (k=60, BM25 + dense)**           | **0.618** | **0.760** | **0.657** | **0.629** | **2.5 ms / q** |
-| + cross-encoder rerank (top-25 funnel)          |   0.598 |      0.760 |  0.614 | 0.604 |   ~285 ms / q  |
-| + KG augmentation                               |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
-| + DAT fusion (ablation)                         |   _TBD_ |      _TBD_ |  _TBD_ | _TBD_ |          _TBD_ |
+| Config                                              | nDCG@10 | Recall@100 | MRR@10 |   MAP   | Search latency |
+| --------------------------------------------------- | ------: | ---------: | -----: | ------: | -------------: |
+| BM25 only (baseline)                                |   0.604 |      0.770 |  0.634 |   0.620 |     0.1 ms / q |
+| BGE-M3 dense alone                                  |   0.589 |      0.759 |  0.612 |   0.593 |     0.6 ms / q |
+| + RRF fusion (k=60, BM25 + dense)                   |   0.618 |      0.760 |  0.657 |   0.629 |     2.5 ms / q |
+| + cross-encoder rerank (top-25 funnel)              |   0.598 |      0.760 |  0.614 |   0.604 |   ~285 ms / q  |
+| KG channel only (Cypher skill-overlap)              |   0.476 |      0.747 |  0.512 |   0.480 |    ~25 ms / q  |
+| **+ RRF3 fusion (BM25 + dense + KG)**               | **0.621** | 0.756 | **0.663** | **0.640** |   ~30 ms / q   |
+| Full pipeline (RRF3 + cross-encoder rerank top-25)  |   0.605 |      0.756 |  0.630 |   0.609 |   ~315 ms / q  |
+| + DAT fusion (ablation)                             |   _TBD_ |      _TBD_ |  _TBD_ |   _TBD_ |          _TBD_ |
 
-### On the natural-language paraphrase stratum (19 queries, Gemini-generated)
+### On the natural-language paraphrase stratum (19 Gemini-generated queries)
 
-| Config                                          | nDCG@10 | Recall@10 | Recall@100 | MRR@10 |
-| ----------------------------------------------- | ------: | --------: | ---------: | -----: |
-| BM25 only (baseline)                            |   0.201 |     0.162 |      0.359 |  0.211 |
-| BGE-M3 dense alone                              |   0.201 |     0.162 |      0.406 |  0.211 |
-| + RRF fusion (k=60)                             |   0.201 |     0.162 |      0.358 |  0.211 |
-| **+ cross-encoder rerank (top-25 funnel)**      | **0.220** | **0.215** |      0.358 | **0.219** |
+| Config                                              | nDCG@10 | Recall@10 | Recall@100 | MRR@10 |
+| --------------------------------------------------- | ------: | --------: | ---------: | -----: |
+| BM25 only (baseline)                                |   0.201 |     0.162 |      0.359 |  0.211 |
+| BGE-M3 dense alone                                  |   0.201 |     0.162 |      0.406 |  0.211 |
+| + RRF fusion (k=60)                                 |   0.201 |     0.162 |      0.358 |  0.211 |
+| + cross-encoder rerank (top-25 funnel)              |   0.220 |     0.215 |      0.358 |  0.219 |
+| KG channel only                                     |   0.158 |     0.158 |      0.368 |  0.158 |
+| + RRF3 fusion (BM25 + dense + KG)                   |   0.217 |     0.215 |      0.400 |  0.216 |
+| **Full pipeline (RRF3 + cross-encoder rerank top-25)** | **0.224** | **0.215** | **0.400** | **0.224** |
 
-**The two strata together tell the story.** On lexically-anchored queries,
-BM25 / RRF dominate because skill-name tokens overlap doc text directly.
-On natural-language paraphrases, **only the cross-encoder lifts retrieval
-quality** — +9.4 % nDCG@10 and +32.4 % Recall@10 over RRF — because
-bge-reranker-v2-m3 was trained on natural-language pairs (MS-MARCO, MIRACL)
-and the paraphrased queries are exactly that distribution.
+**Key findings:**
 
-This is the textbook hybrid-retrieval architecture playing out live: each
-stage handles a different query distribution, and the multi-stage funnel is
-robust *across* distributions in a way that no single signal is.
+1. **RRF3 is the new best on the lexical original stratum** — adding the KG
+   channel as a third RRF input lifts nDCG@10 from 0.618 → 0.621 and MRR@10
+   from 0.657 → 0.663 (job_search MRR@10 hits 0.990, near-saturated). The
+   KG signal genuinely complements the lexical + dense ones.
+2. **Full pipeline is the new best on the natural-language paraphrase stratum** —
+   nDCG@10 = 0.224 vs the 2-stage RRF+rerank's 0.220. The cross-encoder is
+   still the work-horse on this stratum, but RRF3 gives it slightly better
+   candidates to rerank.
+3. **The full pipeline is the most robust** across distributions — top of
+   the table on paraphrases, near-top on original. No single channel wins
+   both; the multi-stage funnel does.
+4. **KG-only is impressively strong on job_search alone** (R@100 = 0.993,
+   nDCG@10 = 0.689) because `REQUIRES_SKILL` edges map directly to query
+   skills. On candidate_search it's weaker (R@100 = 0.464) — proficiency
+   weighting matters less when most candidates have ≥ 1 of the query
+   skills, so the ranking quality drops.
 
 Encoding latency (BGE-M3 dense, FP16 on RTX 4060): 1.7 ms / query, 10 ms / doc at
 index time. Cross-encoder (bge-reranker-v2-m3, FP16, RTX 4060): ~14 ms per
-(query, doc) pair at batch=32.
+(query, doc) pair at batch=32. KG Cypher (Neo4j 5 Community, local Docker):
+~25 ms / query (proficiency-weighted skill-overlap traversal).
 
-> *Paraphrase stratum size note:* we generated 19/100 paraphrases this turn before
-> hitting the Gemini Flash-Lite free-tier daily quota (1 k RPD, ate retries).
-> Stratum will grow to the full 100 once the daily window resets — methodology
-> and code are unchanged; the relative cross-encoder lift will tighten further.
+> *Paraphrase stratum size note:* we generated 19/100 paraphrases before hitting
+> the Gemini Flash-Lite free-tier daily quota (1 k RPD ceiling, retries inflated
+> the count). Stratum will grow to 100 once quota refills — methodology and
+> code unchanged; relative ranking is already established.
+
+### Knowledge graph (Neo4j 5 Community)
+
+Two-sided schema with skills as the join key. Loaded from DuckDB via
+`scripts/07_kg_build.py` in ~26 s.
+
+| Node label   | Count | Source                                      |
+| ------------ | ----: | ------------------------------------------- |
+| `Person`     | 1,782 | profiles.csv                                |
+| `Job`        | 1,370 | demands_data.csv (1,081) + jd_dataset (289) |
+| `Skill`      | 4,553 | canonical (alias 80 / cosine 581 / raw 4,498) |
+| `Role`       |   834 | profiles.potential_roles                    |
+| `Designation`|   415 | demands.designation                         |
+| `Industry`   |    53 | jds.client_industry                         |
+| `Location`   |   131 | demands.{city, country}                     |
+
+| Relationship           | Count  |
+| ---------------------- | -----: |
+| `HAS_SKILL`            | 30,369 |
+| `REQUIRES_SKILL`       |  5,129 |
+| `CAN_FILL`             |  7,283 |
+| `IS_DESIGNATION`       |  1,317 |
+| `AT_LOCATION`          |  1,352 |
+| `IN_INDUSTRY`          |    281 |
+
+**Total: 9,138 nodes, 45,731 relationships.**
 
 ### Per-task split
 

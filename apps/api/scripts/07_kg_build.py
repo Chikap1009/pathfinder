@@ -19,7 +19,6 @@ Outputs:
 from __future__ import annotations
 
 import math
-import sys
 import time
 from pathlib import Path
 
@@ -338,7 +337,6 @@ def run(reset: bool = False, dry_run: bool = False) -> None:
     )
 
 
-@app.command()
 def main(
     reset: bool = typer.Option(False, "--reset", help="WIPE + re-ingest."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Validate inputs only."),
@@ -347,6 +345,4 @@ def main(
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        sys.argv.append("main")
-    app()
+    typer.run(main)
