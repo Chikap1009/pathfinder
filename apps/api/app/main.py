@@ -22,6 +22,32 @@ from app.core.settings import get_settings
 log = get_logger(__name__)
 
 
+async def _warmup_models() -> None:
+    """Pre-load BGE-M3 dense + cross-encoder + retrieval-engine indexes off the event loop.
+
+    Runs as a background task started in the lifespan so the API begins answering
+    requests immediately while the heavy ML models load in parallel. By the time
+    the first /v1/search arrives, the engine is usually warm.
+    """
+    import asyncio
+
+    def _do() -> None:
+        try:
+            from app.services.dense import get_dense_encoder
+            from app.services.rerank import get_reranker
+            from app.services.retrieval import get_engine
+
+            log.info("model_warmup_start")
+            get_engine()  # loads BM25 + dense vectors + skill map + entity meta
+            get_dense_encoder()  # BGE-M3 FP16
+            get_reranker()  # bge-reranker-v2-m3 FP16
+            log.info("model_warmup_done")
+        except Exception as exc:
+            log.warning("model_warmup_failed", error=str(exc)[:200])
+
+    await asyncio.to_thread(_do)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
@@ -70,15 +96,24 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as exc:
         log.warning("neo4j_init_failed", error=str(exc))
 
-    # Lazy slots — populated on first request (see app.services.vector / .rerank)
+    # Lazy slots — populated by the warmup task / first request.
     state["bge_m3"] = None
     state["bge_reranker"] = None
 
     app.state.svc = state
 
+    # Kick off warmup as a non-blocking background task. We schedule (do not await) so
+    # uvicorn can begin accepting requests immediately; the first /v1/search will
+    # likely arrive after warmup completes.
+    import asyncio as _asyncio
+
+    warmup_task = _asyncio.create_task(_warmup_models())
+    state["warmup_task"] = warmup_task
+
     try:
         yield
     finally:
+        warmup_task.cancel()
         log.info("shutdown")
         if (q := state.get("qdrant")) is not None:
             await q.close()
@@ -122,10 +157,12 @@ def create_app() -> FastAPI:
     async def root() -> dict[str, str]:
         return {"name": "PathFinder API", "docs": "/docs"}
 
-    # API v1 routers — wired in subsequent weeks.
-    # from app.api.v1 import search, profile, explain, graph, eval as eval_api, index
-    # for r in (search, profile, explain, graph, eval_api, index):
-    #     app.include_router(r.router, prefix="/v1")
+    # API v1 routers
+    from app.api.v1 import job, profile, search
+
+    app.include_router(search.router, prefix="/v1")
+    app.include_router(profile.router, prefix="/v1")
+    app.include_router(job.router, prefix="/v1")
 
     return app
 
