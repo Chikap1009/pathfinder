@@ -17,6 +17,15 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - name: Stage data artifacts into apps/api/data/
+        run: |
+          # If the precomputed data isn't checked in (it isn't; it's gitignored),
+          # this step is a no-op locally. CI users can either commit a snapshot
+          # to apps/api/data/ or set up a separate artifact registry.
+          if [ -x apps/api/scripts/stage_for_hf.sh ]; then
+            ./apps/api/scripts/stage_for_hf.sh || true
+          fi
+
       - name: Push apps/api/ subtree to HF Space
         env:
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
@@ -29,7 +38,10 @@ jobs:
           fi
           git config user.name  "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
+          # Stage data must be committed to a local branch before subtree split;
+          # otherwise gitignored apps/api/data/ won't be included.
+          git add -f apps/api/data/ 2>/dev/null || true
+          git commit -m "ci: stage data artifacts" --allow-empty || true
           git remote add space "https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE" || true
-          # Push only apps/api/ as the Space root via subtree split.
           git subtree split --prefix=apps/api -b _hf_api
           git push --force space _hf_api:main

@@ -1,3 +1,8 @@
+# Dev caches
+# Note: README.md IS shipped — pyproject.toml needs it for the package
+# metadata, and HF Spaces uses it as the Space landing page (the
+# `sdk: docker` frontmatter is already in apps/api/README.md).
+
 .venv/
 __pycache__/
 *.pyc
@@ -5,13 +10,26 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
-data/raw/
-data/interim/
-data/processed/
-*.parquet
-*.duckdb
 hf_cache/
+
+# Local secrets — HF Space provides env vars at runtime
 .env
 .env.*
-README.md
+
+# Tests not shipped in production image
 tests/
+
+# Note: keep README.md included — pyproject.toml references it as the package
+# readme, and HF Spaces uses it for the Space landing page (with the SDK
+# frontmatter it already contains).
+
+# Data: ALLOW the staged artifacts, BLOCK the noisy ones.
+# (apps/api/data/ is pre-populated by scripts/stage_for_hf.sh.)
+data/raw/
+data/interim/
+data/processed/runs/
+data/processed/*/runs/
+
+# Don't ship the noisy ESCO cache files — recomputed on demand
+data/processed/skills/esco_cache.jsonl
+data/processed/skills/canonical.json

@@ -35,6 +35,10 @@ data/neo4j_data/
 data/neo4j_logs/
 data/neo4j_import/
 data/redis_data/
+
+# Staged copy of /data into apps/api/ for the Docker build context.
+# Recreated by `apps/api/scripts/stage_for_hf.sh`; never commit.
+apps/api/data/
 *.parquet
 *.duckdb
 *.duckdb.wal
