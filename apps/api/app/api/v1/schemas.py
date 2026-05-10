@@ -213,3 +213,95 @@ class JobDetail(BaseModel):
     raw_text: str | None = None
     enhanced_text: str | None = None
     canonical_text: str = ""
+
+
+# ─── Evaluation summary (the /eval dashboard) ────────────────────────────────
+
+
+class CorpusStats(BaseModel):
+    profiles: int
+    jobs: int
+    canonical_skills: int
+    has_skill_edges: int
+    requires_skill_edges: int
+
+
+class KGStats(BaseModel):
+    persons: int
+    jobs: int
+    skills: int
+    roles: int
+    designations: int
+    industries: int
+    locations: int
+    has_skill: int
+    requires_skill: int
+    can_fill: int
+    is_designation: int
+    at_location: int
+    in_industry: int
+
+    @property
+    def total_nodes(self) -> int:
+        return (
+            self.persons
+            + self.jobs
+            + self.skills
+            + self.roles
+            + self.designations
+            + self.industries
+            + self.locations
+        )
+
+
+class EvalSetStats(BaseModel):
+    """Composition of the deterministic eval set."""
+
+    total_queries: int
+    candidate_search: int
+    job_search: int
+    paraphrase_stratum: int
+    seed: int = 42
+
+
+class AblationRow(BaseModel):
+    """One configuration's metrics on one stratum."""
+
+    name: str
+    pipeline: Literal[
+        "bm25", "dense", "rrf", "rerank25", "rerank50", "kg_only", "rrf3", "rrf3_rerank"
+    ]
+    stratum: Literal["overall", "original", "paraphrase", "candidate_search", "job_search"]
+    ndcg_at_10: float | None = None
+    recall_at_10: float | None = None
+    recall_at_100: float | None = None
+    mrr_at_10: float | None = None
+    map_score: float | None = None
+    latency_ms: float | None = None
+    is_best_for_stratum: bool = False
+
+
+class LatencyStage(BaseModel):
+    stage: str
+    ms_per_query: float
+    notes: str | None = None
+
+
+class EvalTargets(BaseModel):
+    recall_at_100: float = 0.97
+    ndcg_at_10: float = 0.55
+    mrr_at_10: float = 0.65
+    ragas_faithfulness: float = 0.95
+    p95_latency_ms: float = 2000
+
+
+class EvalSummary(BaseModel):
+    """Snapshot of the entire offline-eval state. Powers the /eval dashboard."""
+
+    corpus: CorpusStats
+    kg: KGStats
+    eval_set: EvalSetStats
+    ablation: list[AblationRow]
+    latency_budget: list[LatencyStage]
+    targets: EvalTargets
+    notes: list[str] = Field(default_factory=list)

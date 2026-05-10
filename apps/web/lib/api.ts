@@ -17,6 +17,12 @@ export type IntentResult = components["schemas"]["IntentResult"];
 export type ProfileDetail = components["schemas"]["ProfileDetail"];
 export type JobDetail = components["schemas"]["JobDetail"];
 export type TimingMs = components["schemas"]["TimingMs"];
+export type EvalSummary = components["schemas"]["EvalSummary"];
+export type AblationRow = components["schemas"]["AblationRow"];
+export type CorpusStats = components["schemas"]["CorpusStats"];
+export type KGStats = components["schemas"]["KGStats"];
+export type EvalSetStats = components["schemas"]["EvalSetStats"];
+export type LatencyStage = components["schemas"]["LatencyStage"];
 
 // SSE event payload — not in the OpenAPI schema (FastAPI doesn't serialize the
 // StreamingResponse type), so we mirror the Python pydantic model manually.
@@ -78,6 +84,10 @@ export async function getProfile(id: string): Promise<ProfileDetail> {
 export async function getJob(id: string): Promise<JobDetail> {
   type Resp = paths["/v1/job/{job_id}"]["get"]["responses"]["200"]["content"]["application/json"];
   return _fetch<Resp>(`/v1/job/${encodeURIComponent(id)}`, { method: "GET" });
+}
+
+export async function getEvalSummary(): Promise<EvalSummary> {
+  return _fetch<EvalSummary>("/v1/eval/summary", { method: "GET" });
 }
 
 // ─── SSE search-stream ───────────────────────────────────────────────────────

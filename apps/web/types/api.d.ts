@@ -112,10 +112,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/eval/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Canonical eval snapshot — corpus + KG + ablation table + latency
+         * @description Powers the /eval dashboard. Returns the 21-row ablation matrix (7 configs × 3 strata), KG node + edge counts, eval-set composition, and the per-stage latency budget. Numbers are sourced from real ablation runs committed in data/processed/*\/runs/<timestamp>/. Best-per-stratum row is flagged.
+         */
+        get: operations["summary_v1_eval_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AblationRow
+         * @description One configuration's metrics on one stratum.
+         */
+        AblationRow: {
+            /** Name */
+            name: string;
+            /**
+             * Pipeline
+             * @enum {string}
+             */
+            pipeline: "bm25" | "dense" | "rrf" | "rerank25" | "rerank50" | "kg_only" | "rrf3" | "rrf3_rerank";
+            /**
+             * Stratum
+             * @enum {string}
+             */
+            stratum: "overall" | "original" | "paraphrase" | "candidate_search" | "job_search";
+            /** Ndcg At 10 */
+            ndcg_at_10?: number | null;
+            /** Recall At 10 */
+            recall_at_10?: number | null;
+            /** Recall At 100 */
+            recall_at_100?: number | null;
+            /** Mrr At 10 */
+            mrr_at_10?: number | null;
+            /** Map Score */
+            map_score?: number | null;
+            /** Latency Ms */
+            latency_ms?: number | null;
+            /**
+             * Is Best For Stratum
+             * @default false
+             */
+            is_best_for_stratum: boolean;
+        };
+        /** CorpusStats */
+        CorpusStats: {
+            /** Profiles */
+            profiles: number;
+            /** Jobs */
+            jobs: number;
+            /** Canonical Skills */
+            canonical_skills: number;
+            /** Has Skill Edges */
+            has_skill_edges: number;
+            /** Requires Skill Edges */
+            requires_skill_edges: number;
+        };
+        /**
+         * EvalSetStats
+         * @description Composition of the deterministic eval set.
+         */
+        EvalSetStats: {
+            /** Total Queries */
+            total_queries: number;
+            /** Candidate Search */
+            candidate_search: number;
+            /** Job Search */
+            job_search: number;
+            /** Paraphrase Stratum */
+            paraphrase_stratum: number;
+            /**
+             * Seed
+             * @default 42
+             */
+            seed: number;
+        };
+        /**
+         * EvalSummary
+         * @description Snapshot of the entire offline-eval state. Powers the /eval dashboard.
+         */
+        EvalSummary: {
+            corpus: components["schemas"]["CorpusStats"];
+            kg: components["schemas"]["KGStats"];
+            eval_set: components["schemas"]["EvalSetStats"];
+            /** Ablation */
+            ablation: components["schemas"]["AblationRow"][];
+            /** Latency Budget */
+            latency_budget: components["schemas"]["LatencyStage"][];
+            targets: components["schemas"]["EvalTargets"];
+            /** Notes */
+            notes?: string[];
+        };
+        /** EvalTargets */
+        EvalTargets: {
+            /**
+             * Recall At 100
+             * @default 0.97
+             */
+            recall_at_100: number;
+            /**
+             * Ndcg At 10
+             * @default 0.55
+             */
+            ndcg_at_10: number;
+            /**
+             * Mrr At 10
+             * @default 0.65
+             */
+            mrr_at_10: number;
+            /**
+             * Ragas Faithfulness
+             * @default 0.95
+             */
+            ragas_faithfulness: number;
+            /**
+             * P95 Latency Ms
+             * @default 2000
+             */
+            p95_latency_ms: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -205,6 +336,44 @@ export interface components {
             priority: "must_have" | "good_to_have";
             /** Category */
             category: string;
+        };
+        /** KGStats */
+        KGStats: {
+            /** Persons */
+            persons: number;
+            /** Jobs */
+            jobs: number;
+            /** Skills */
+            skills: number;
+            /** Roles */
+            roles: number;
+            /** Designations */
+            designations: number;
+            /** Industries */
+            industries: number;
+            /** Locations */
+            locations: number;
+            /** Has Skill */
+            has_skill: number;
+            /** Requires Skill */
+            requires_skill: number;
+            /** Can Fill */
+            can_fill: number;
+            /** Is Designation */
+            is_designation: number;
+            /** At Location */
+            at_location: number;
+            /** In Industry */
+            in_industry: number;
+        };
+        /** LatencyStage */
+        LatencyStage: {
+            /** Stage */
+            stage: string;
+            /** Ms Per Query */
+            ms_per_query: number;
+            /** Notes */
+            notes?: string | null;
         };
         /**
          * PipelineMode
@@ -582,6 +751,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_v1_eval_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvalSummary"];
                 };
             };
         };

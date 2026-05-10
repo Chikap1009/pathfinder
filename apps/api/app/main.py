@@ -158,11 +158,13 @@ def create_app() -> FastAPI:
         return {"name": "PathFinder API", "docs": "/docs"}
 
     # API v1 routers
+    from app.api.v1 import eval as eval_router
     from app.api.v1 import job, profile, search
 
     app.include_router(search.router, prefix="/v1")
     app.include_router(profile.router, prefix="/v1")
     app.include_router(job.router, prefix="/v1")
+    app.include_router(eval_router.router, prefix="/v1")
 
     return app
 
