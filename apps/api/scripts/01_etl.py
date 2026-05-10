@@ -489,7 +489,11 @@ def etl_jds() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 4 — DuckDB views over the Parquet outputs
+# Stage 4 — DuckDB tables materialized from the Parquet outputs
+#
+# We use CREATE OR REPLACE TABLE (not VIEW) so the .duckdb file is
+# self-contained and portable: the production deploy ships only the
+# .duckdb to the HF Space and does not have access to the interim parquets.
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -500,28 +504,28 @@ def register_duckdb() -> None:
     interim = INTERIM_DIR.as_posix()
     con.execute(
         f"""
-        -- raw stage tables
-        CREATE OR REPLACE VIEW profiles        AS SELECT * FROM '{interim}/profiles.parquet';
-        CREATE OR REPLACE VIEW profile_skills  AS SELECT * FROM '{interim}/profile_skills.parquet';
-        CREATE OR REPLACE VIEW demands         AS SELECT * FROM '{interim}/demands.parquet';
-        CREATE OR REPLACE VIEW demand_skills   AS SELECT * FROM '{interim}/demand_skills.parquet';
-        CREATE OR REPLACE VIEW jds             AS SELECT * FROM '{interim}/jds.parquet';
-        CREATE OR REPLACE VIEW jd_skills       AS SELECT * FROM '{interim}/jd_skills.parquet';
+        -- raw stage tables (materialized — no parquet path dependency at read time)
+        CREATE OR REPLACE TABLE profiles        AS SELECT * FROM '{interim}/profiles.parquet';
+        CREATE OR REPLACE TABLE profile_skills  AS SELECT * FROM '{interim}/profile_skills.parquet';
+        CREATE OR REPLACE TABLE demands         AS SELECT * FROM '{interim}/demands.parquet';
+        CREATE OR REPLACE TABLE demand_skills   AS SELECT * FROM '{interim}/demand_skills.parquet';
+        CREATE OR REPLACE TABLE jds             AS SELECT * FROM '{interim}/jds.parquet';
+        CREATE OR REPLACE TABLE jd_skills       AS SELECT * FROM '{interim}/jd_skills.parquet';
 
         -- unified Job table (demands + jds)
-        CREATE OR REPLACE VIEW jobs AS
+        CREATE OR REPLACE TABLE jobs AS
             SELECT * FROM demands
             UNION ALL BY NAME
             SELECT * FROM jds;
 
         -- unified job_skills (demands + jds)
-        CREATE OR REPLACE VIEW job_skills AS
+        CREATE OR REPLACE TABLE job_skills AS
             SELECT * FROM demand_skills
             UNION ALL BY NAME
             SELECT * FROM jd_skills;
 
         -- canonical Skill catalog (deduped across both sides)
-        CREATE OR REPLACE VIEW skills AS
+        CREATE OR REPLACE TABLE skills AS
             WITH all_skills AS (
                 SELECT skill_id, skill_name FROM profile_skills
                 UNION ALL
@@ -530,11 +534,13 @@ def register_duckdb() -> None:
             SELECT skill_id, MIN(skill_name) AS skill_name, COUNT(*) AS occurrences
             FROM all_skills
             GROUP BY skill_id;
+
+        CHECKPOINT;
         """
     )
 
     # Show counts
-    t = Table(title="DuckDB views", show_lines=False)
+    t = Table(title="DuckDB tables", show_lines=False)
     t.add_column("table", style="cyan")
     t.add_column("rows", justify="right")
     for view in (
