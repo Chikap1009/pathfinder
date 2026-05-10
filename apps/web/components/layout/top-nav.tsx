@@ -4,12 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Command } from "cmdk";
-import { Search, Network, BarChart3, FileCog2, Sparkles } from "lucide-react";
+import { Search, BarChart3, FileCog2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/search",       label: "Search",       icon: Search   },
-  { href: "/graph",        label: "Graph",        icon: Network  },
   { href: "/eval",         label: "Eval",         icon: BarChart3 },
   { href: "/architecture", label: "Architecture", icon: FileCog2 },
 ] as const;
@@ -88,7 +87,7 @@ export function TopNav() {
             />
             <Command.List className="max-h-80 overflow-y-auto p-2 text-sm">
               <Command.Empty className="text-muted-foreground px-3 py-6 text-center">
-                No commands yet — wired in Week 4.
+                No matching pages.
               </Command.Empty>
               <Command.Group heading="Pages">
                 {NAV.map(({ href, label, icon: Icon }) => (

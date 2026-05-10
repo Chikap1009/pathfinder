@@ -1,14 +1,13 @@
 export const metadata = { title: "Architecture · PathFinder" };
 
 const STAGES = [
-  { stage: "0",  name: "Intent router",       budget: "150 ms", model: "Groq Llama-3.1-8B-Instant" },
-  { stage: "1A", name: "BM25 (BM25S BM25+)",  budget: "5 ms",   model: "BM25S, k1=1.5, b=0.75" },
-  { stage: "1B", name: "Dense + sparse",      budget: "20 ms",  model: "BGE-M3, Qdrant HNSW M=16" },
-  { stage: "1C", name: "Text2Cypher (KG)",    budget: "250 ms", model: "Groq Llama-3.3-70B-versatile" },
-  { stage: "2",  name: "RRF fusion",          budget: "5 ms",   model: "k=60, server-side in Qdrant" },
-  { stage: "3",  name: "Cross-encoder",       budget: "150 ms", model: "bge-reranker-v2-m3 FP16" },
-  { stage: "4",  name: "Explanation",         budget: "800 ms", model: "Gemini 2.5 Flash, JSON schema" },
-  { stage: "5",  name: "RAGAS faithfulness",  budget: "200 ms", model: "Gemini judge (different family)" },
+  { stage: "0",  name: "Intent router",          budget: "150 ms", model: "Gemini 2.5 Flash-Lite + Instructor (lru-cached)" },
+  { stage: "1A", name: "BM25 retrieval",         budget: "0.2 ms", model: "BM25S BM25+, k1=1.5, b=0.75" },
+  { stage: "1B", name: "Dense retrieval",        budget: "2.3 ms", model: "BGE-M3 (FP16) → in-memory NumPy cosine" },
+  { stage: "1C", name: "KG retrieval",           budget: "25 ms",  model: "Cypher templates over Neo4j AuraDB Free" },
+  { stage: "2",  name: "RRF3 fusion",            budget: "0.1 ms", model: "k=60, BM25 + dense + KG ranks" },
+  { stage: "3",  name: "Cross-encoder rerank",   budget: "285 ms", model: "bge-reranker-v2-m3 FP16, top-25 funnel" },
+  { stage: "4",  name: "Per-stage scores → SSE", budget: "5 ms",   model: "FastAPI StreamingResponse" },
 ] as const;
 
 export default function ArchitecturePage() {
@@ -17,9 +16,10 @@ export default function ArchitecturePage() {
       <header>
         <h1 className="font-mono text-3xl font-semibold tracking-tight">Architecture</h1>
         <p className="text-muted-foreground">
-          Latency budget targets <strong className="text-foreground">p95 &lt; 2 s</strong> on
-          a single RTX 4060. Each stage is independently swappable behind the
-          LiteLLM proxy + Qdrant Query API.
+          Measured per-stage latency on the live deploy (rrf3_rerank pipeline,
+          119-query overall mean): <strong className="text-foreground">315 ms p95 end-to-end</strong>,
+          well under the 2 s target. Stage timings are emitted on every search
+          via Server-Sent Events.
         </p>
       </header>
 
@@ -46,12 +46,48 @@ export default function ArchitecturePage() {
         </table>
       </div>
 
-      <div className="border-border bg-muted/20 text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm font-mono">
-        [ interactive Excalidraw / Mermaid diagram placeholder ]
-      </div>
+      <pre className="border-border bg-muted/20 text-muted-foreground overflow-x-auto rounded-lg border p-6 text-xs leading-relaxed">
+{`        query
+          │
+          ▼
+   intent (Gemini)
+          │
+   ┌──────┼──────┐
+   ▼      ▼      ▼
+  BM25  dense   KG          ← three parallel channels
+   │      │      │
+   └──────┼──────┘
+          ▼
+       RRF k=60               ← rank-fusion (RRF3)
+          │
+          ▼
+   cross-encoder rerank       ← bge-reranker-v2-m3, top-25 funnel
+          │
+          ▼
+   results + per-stage
+   scores via SSE`}
+      </pre>
 
       <footer className="text-muted-foreground text-xs font-mono">
-        See <code>docs/architecture.md</code> and <code>docs/decisions/*.md</code> for the deeper write-up.
+        See{" "}
+        <a
+          href="https://github.com/Chikap1009/pathfinder/blob/main/docs/architecture.md"
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground hover:underline"
+        >
+          docs/architecture.md
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://github.com/Chikap1009/pathfinder/tree/main/docs/decisions"
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground hover:underline"
+        >
+          docs/decisions/
+        </a>{" "}
+        for the deeper write-up.
       </footer>
     </section>
   );
